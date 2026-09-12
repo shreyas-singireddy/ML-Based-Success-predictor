@@ -1,0 +1,347 @@
+{
+  "model_version": "risk_v1.0.0",
+  "model_name": "DecisionTreeClassifier",
+  "model_type": "DecisionTreeClassifier",
+  "trained_at_utc": "2026-09-12T20:45:54.840741+00:00",
+  "python_version": "3.11.9",
+  "sklearn_version": "1.9.0",
+  "xgboost_version": "3.2.0",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "random_seed": 42,
+  "training_samples": 480,
+  "validation_samples": 94,
+  "test_samples": 141,
+  "feature_count": 32,
+  "feature_names": [
+    "age",
+    "semester",
+    "attendance_percentage",
+    "previous_cgpa",
+    "mid_1",
+    "mid_2",
+    "internal_marks",
+    "backlogs",
+    "academic_average",
+    "attendance_risk_score",
+    "internal_average",
+    "mid_term_average",
+    "previous_cgpa_trend",
+    "backlog_severity_score",
+    "academic_stability",
+    "enc_gender_FEMALE",
+    "enc_gender_MALE",
+    "enc_gender_OTHER",
+    "enc_department_code_AI",
+    "enc_department_code_CIVIL",
+    "enc_department_code_CS",
+    "enc_department_code_DS",
+    "enc_department_code_ECE",
+    "enc_department_code_EEE",
+    "enc_department_code_IT",
+    "enc_department_code_MECH",
+    "enc_attendance_risk_category_AT_RISK",
+    "enc_attendance_risk_category_CRITICAL",
+    "enc_attendance_risk_category_NORMAL",
+    "enc_backlog_severity_category_MODERATE",
+    "enc_backlog_severity_category_NONE",
+    "enc_backlog_severity_category_SEVERE"
+  ],
+  "target_name": "academic_risk_level",
+  "risk_target_source": "policy_derived",
+  "risk_policy_version": "1.0.0",
+  "class_order": [
+    "LOW",
+    "MEDIUM",
+    "HIGH",
+    "CRITICAL"
+  ],
+  "class_distribution": {
+    "train": {
+      "LOW": {
+        "count": 179,
+        "percentage": 37.29
+      },
+      "MEDIUM": {
+        "count": 112,
+        "percentage": 23.33
+      },
+      "HIGH": {
+        "count": 109,
+        "percentage": 22.71
+      },
+      "CRITICAL": {
+        "count": 80,
+        "percentage": 16.67
+      }
+    },
+    "val": {
+      "LOW": {
+        "count": 31,
+        "percentage": 32.98
+      },
+      "MEDIUM": {
+        "count": 21,
+        "percentage": 22.34
+      },
+      "HIGH": {
+        "count": 26,
+        "percentage": 27.66
+      },
+      "CRITICAL": {
+        "count": 16,
+        "percentage": 17.02
+      }
+    },
+    "test": {
+      "LOW": {
+        "count": 46,
+        "percentage": 32.62
+      },
+      "MEDIUM": {
+        "count": 36,
+        "percentage": 25.53
+      },
+      "HIGH": {
+        "count": 36,
+        "percentage": 25.53
+      },
+      "CRITICAL": {
+        "count": 23,
+        "percentage": 16.31
+      }
+    }
+  },
+  "dataset_manifest_hash": "sha256_verified",
+  "validation_metrics": {
+    "accuracy": 1.0,
+    "macro_precision": 1.0,
+    "weighted_precision": 1.0,
+    "macro_recall": 1.0,
+    "weighted_recall": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "high_recall": 1.0,
+    "critical_recall": 1.0,
+    "high_critical_combined_recall": 1.0,
+    "per_class_recall": {
+      "LOW": 1.0,
+      "MEDIUM": 1.0,
+      "HIGH": 1.0,
+      "CRITICAL": 1.0
+    },
+    "confusion_matrix": [
+      [
+        31,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        21,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        26,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        16
+      ]
+    ],
+    "class_labels": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "CRITICAL"
+    ],
+    "roc_auc": 1.0,
+    "roc_auc_status": "calculated"
+  },
+  "test_metrics": {
+    "accuracy": 0.9929,
+    "macro_precision": 0.9932,
+    "weighted_precision": 0.9931,
+    "macro_recall": 0.9891,
+    "weighted_recall": 0.9929,
+    "macro_f1": 0.991,
+    "weighted_f1": 0.9929,
+    "high_recall": 1.0,
+    "critical_recall": 0.9565,
+    "high_critical_combined_recall": 1.0,
+    "per_class_recall": {
+      "LOW": 1.0,
+      "MEDIUM": 1.0,
+      "HIGH": 1.0,
+      "CRITICAL": 0.9565217391304348
+    },
+    "confusion_matrix": [
+      [
+        46,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        36,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        36,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        22
+      ]
+    ],
+    "class_labels": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "CRITICAL"
+    ],
+    "roc_auc": 0.9934,
+    "roc_auc_status": "calculated"
+  },
+  "hyperparameters": {
+    "ccp_alpha": 0.0,
+    "class_weight": "balanced",
+    "criterion": "gini",
+    "max_depth": 5,
+    "max_features": null,
+    "max_leaf_nodes": null,
+    "min_impurity_decrease": 0.0,
+    "min_samples_leaf": 1,
+    "min_samples_split": 4,
+    "min_weight_fraction_leaf": 0.0,
+    "monotonic_cst": null,
+    "random_state": 42,
+    "splitter": "best"
+  },
+  "selection_reason": "Selected 'DecisionTreeClassifier' with highest Validation Macro F1 (1.0000) satisfying safety recall gates (HIGH Recall: 1.0000 >= 0.5, CRITICAL Recall: 1.0000 >= 0.5). Combined HIGH/CRITICAL Recall: 1.0000.",
+  "all_candidates_validation": {
+    "DecisionTreeClassifier": {
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "high_recall": 1.0,
+      "critical_recall": 1.0,
+      "roc_auc": 1.0
+    },
+    "RandomForestClassifier": {
+      "accuracy": 0.9574,
+      "macro_precision": 0.9587,
+      "macro_recall": 0.9571,
+      "macro_f1": 0.9565,
+      "high_recall": 0.9231,
+      "critical_recall": 0.9375,
+      "roc_auc": 0.9983
+    },
+    "LogisticRegression": {
+      "accuracy": 0.9255,
+      "macro_precision": 0.9313,
+      "macro_recall": 0.9275,
+      "macro_f1": 0.927,
+      "high_recall": 0.8846,
+      "critical_recall": 0.9375,
+      "roc_auc": 0.9859
+    },
+    "SVC": {
+      "accuracy": 0.883,
+      "macro_precision": 0.8893,
+      "macro_recall": 0.8877,
+      "macro_f1": 0.8838,
+      "high_recall": 0.8846,
+      "critical_recall": 0.875,
+      "roc_auc": 0.9894
+    },
+    "XGBClassifier": {
+      "accuracy": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "macro_f1": 1.0,
+      "high_recall": 1.0,
+      "critical_recall": 1.0,
+      "roc_auc": 1.0
+    },
+    "MLPClassifier": {
+      "accuracy": 0.9149,
+      "macro_precision": 0.9416,
+      "macro_recall": 0.8973,
+      "macro_f1": 0.9103,
+      "high_recall": 1.0,
+      "critical_recall": 0.875,
+      "roc_auc": 0.9857
+    }
+  },
+  "all_candidates_test": {
+    "DecisionTreeClassifier": {
+      "accuracy": 0.9929,
+      "macro_precision": 0.9932,
+      "macro_recall": 0.9891,
+      "macro_f1": 0.991,
+      "high_recall": 1.0,
+      "critical_recall": 0.9565,
+      "roc_auc": 0.9934
+    },
+    "RandomForestClassifier": {
+      "accuracy": 0.9645,
+      "macro_precision": 0.9678,
+      "macro_recall": 0.9574,
+      "macro_f1": 0.9619,
+      "high_recall": 0.9444,
+      "critical_recall": 0.913,
+      "roc_auc": 0.9989
+    },
+    "LogisticRegression": {
+      "accuracy": 0.9149,
+      "macro_precision": 0.9286,
+      "macro_recall": 0.9118,
+      "macro_f1": 0.9189,
+      "high_recall": 0.8889,
+      "critical_recall": 0.913,
+      "roc_auc": 0.9875
+    },
+    "SVC": {
+      "accuracy": 0.8511,
+      "macro_precision": 0.8884,
+      "macro_recall": 0.8569,
+      "macro_f1": 0.8586,
+      "high_recall": 1.0,
+      "critical_recall": 0.913,
+      "roc_auc": 0.9804
+    },
+    "XGBClassifier": {
+      "accuracy": 0.9929,
+      "macro_precision": 0.9932,
+      "macro_recall": 0.9891,
+      "macro_f1": 0.991,
+      "high_recall": 1.0,
+      "critical_recall": 0.9565,
+      "roc_auc": 1.0
+    },
+    "MLPClassifier": {
+      "accuracy": 0.7801,
+      "macro_precision": 0.855,
+      "macro_recall": 0.769,
+      "macro_f1": 0.7581,
+      "high_recall": 0.9722,
+      "critical_recall": 0.8261,
+      "roc_auc": 0.9779
+    }
+  }
+}
