@@ -14,6 +14,10 @@ from backend.app.models.student import StudentProfile
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_PREFIX}/auth/login"
 )
+oauth2_scheme_optional = OAuth2PasswordBearer(
+    tokenUrl=f"{settings.API_V1_PREFIX}/auth/login",
+    auto_error=False,
+)
 
 
 async def get_current_user(
@@ -57,6 +61,35 @@ async def get_current_user(
             detail="Inactive user account"
         )
     return user
+
+
+async def get_current_user_optional(
+    token: Optional[str] = Depends(oauth2_scheme_optional),
+    db: AsyncSession = Depends(get_db)
+) -> Optional[User]:
+    """Optional authentication dependency that returns User if valid token is provided, else None."""
+    if not token:
+        return None
+    try:
+        payload = decode_token(token)
+        if not payload or not payload.get("sub"):
+            return None
+        user_id = uuid.UUID(payload["sub"])
+        stmt = (
+            select(User)
+            .where(User.id == user_id)
+            .options(
+                selectinload(User.student_profile),
+                selectinload(User.faculty_profile)
+            )
+        )
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
+        if user and user.is_active:
+            return user
+        return None
+    except Exception:
+        return None
 
 
 def require_roles(*allowed_roles: UserRole) -> Callable:

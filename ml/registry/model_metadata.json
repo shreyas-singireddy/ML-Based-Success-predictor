@@ -1,0 +1,104 @@
+{
+  "model_name": "LinearRegression",
+  "model_type": "baseline_linear",
+  "model_version": "cgpa_v1.0.0",
+  "training_timestamp_utc": "2026-09-12T20:10:45.904149+00:00",
+  "random_seed": 42,
+  "feature_count": 32,
+  "feature_names": [
+    "age",
+    "semester",
+    "attendance_percentage",
+    "previous_cgpa",
+    "mid_1",
+    "mid_2",
+    "internal_marks",
+    "backlogs",
+    "academic_average",
+    "attendance_risk_score",
+    "internal_average",
+    "mid_term_average",
+    "previous_cgpa_trend",
+    "backlog_severity_score",
+    "academic_stability",
+    "enc_gender_FEMALE",
+    "enc_gender_MALE",
+    "enc_gender_OTHER",
+    "enc_department_code_AI",
+    "enc_department_code_CIVIL",
+    "enc_department_code_CS",
+    "enc_department_code_DS",
+    "enc_department_code_ECE",
+    "enc_department_code_EEE",
+    "enc_department_code_IT",
+    "enc_department_code_MECH",
+    "enc_attendance_risk_category_AT_RISK",
+    "enc_attendance_risk_category_CRITICAL",
+    "enc_attendance_risk_category_NORMAL",
+    "enc_backlog_severity_category_MODERATE",
+    "enc_backlog_severity_category_NONE",
+    "enc_backlog_severity_category_SEVERE"
+  ],
+  "target_name": "semester_cgpa",
+  "validation_metrics": {
+    "mae": 0.1515,
+    "mse": 0.0371,
+    "rmse": 0.1926,
+    "r2": 0.9843,
+    "sample_count": 94
+  },
+  "test_metrics": {
+    "mae": 0.2138,
+    "mse": 0.0672,
+    "rmse": 0.2593,
+    "r2": 0.9707,
+    "sample_count": 141
+  },
+  "cv_rmse_mean": 0.2119,
+  "cv_rmse_std": 0.013,
+  "hyperparameters": {
+    "copy_X": true,
+    "fit_intercept": true,
+    "n_jobs": null,
+    "positive": false,
+    "tol": 1e-06
+  },
+  "top_feature_importances": {
+    "academic_average": 15.0479,
+    "mid_term_average": 12.7005,
+    "mid_2": -12.4715,
+    "mid_1": -11.9466,
+    "internal_marks": -2.575,
+    "internal_average": -2.575,
+    "previous_cgpa": 1.0466,
+    "backlogs": -0.2307,
+    "attendance_risk_score": 0.1311,
+    "enc_department_code_MECH": -0.0954,
+    "enc_department_code_AI": 0.0503,
+    "enc_attendance_risk_category_CRITICAL": -0.0502,
+    "backlog_severity_score": -0.0461,
+    "enc_attendance_risk_category_NORMAL": 0.0375,
+    "enc_department_code_ECE": 0.0327
+  },
+  "selection_reason": "Selected 'LinearRegression' because it achieved the lowest Validation RMSE (0.1926) and Validation MAE (0.1515) with R\u00b2 of 0.9843.",
+  "candidate_models_compared": [
+    {
+      "model_name": "LinearRegression",
+      "val_rmse": 0.1926,
+      "val_mae": 0.1515,
+      "val_r2": 0.9843
+    },
+    {
+      "model_name": "RandomForestRegressor",
+      "val_rmse": 0.2225,
+      "val_mae": 0.1753,
+      "val_r2": 0.979
+    },
+    {
+      "model_name": "XGBRegressor",
+      "val_rmse": 0.204,
+      "val_mae": 0.1617,
+      "val_r2": 0.9823
+    }
+  ]
+}

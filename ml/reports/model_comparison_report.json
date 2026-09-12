@@ -1,0 +1,58 @@
+{
+  "dataset_info": {
+    "total_records": 715,
+    "train_records": 480,
+    "train_pct": "67.1%",
+    "val_records": 94,
+    "val_pct": "13.1%",
+    "test_records": 141,
+    "test_pct": "19.7%"
+  },
+  "candidate_results": [
+    {
+      "name": "LinearRegression",
+      "type": "baseline_linear",
+      "val_metrics": {
+        "mae": 0.1515,
+        "mse": 0.0371,
+        "rmse": 0.1926,
+        "r2": 0.9843,
+        "sample_count": 94
+      },
+      "cv_rmse": 0.2119
+    },
+    {
+      "name": "RandomForestRegressor",
+      "type": "tree_ensemble",
+      "val_metrics": {
+        "mae": 0.1753,
+        "mse": 0.0495,
+        "rmse": 0.2225,
+        "r2": 0.979,
+        "sample_count": 94
+      },
+      "cv_rmse": 0.2552
+    },
+    {
+      "name": "XGBRegressor",
+      "type": "gradient_boosting",
+      "val_metrics": {
+        "mae": 0.1617,
+        "mse": 0.0416,
+        "rmse": 0.204,
+        "r2": 0.9823,
+        "sample_count": 94
+      },
+      "cv_rmse": 0.2416
+    }
+  ],
+  "champion_model": "LinearRegression",
+  "test_metrics": {
+    "mae": 0.2138,
+    "mse": 0.0672,
+    "rmse": 0.2593,
+    "r2": 0.9707,
+    "sample_count": 141
+  },
+  "selection_reason": "Selected 'LinearRegression' because it achieved the lowest Validation RMSE (0.1926) and Validation MAE (0.1515) with R\u00b2 of 0.9843."
+}

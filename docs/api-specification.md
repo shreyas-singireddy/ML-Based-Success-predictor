@@ -177,6 +177,56 @@ All 4xx and 5xx errors return a standardized JSON structure:
 
 ## 5. Machine Learning & Prediction Endpoints (`/api/v1/predictions`)
 
+### 5.0 Direct AI CGPA Prediction (Phase 3 Core)
+* **Endpoint:** `POST /api/v1/predictions/cgpa`
+* **Auth Required:** No (Open for ad-hoc what-if & institutional inference)
+* **Allowed Roles:** Public / Authenticated
+* **Description:** Executes active champion ML model (`LinearRegression`, `RandomForest`, or `XGBoost`) using Phase 2 preprocessor artifact to return bounded predicted CGPA and dynamic metadata.
+* **Request:**
+```json
+{
+  "attendance_percentage": 82.0,
+  "previous_cgpa": 7.40,
+  "mid_1": 72.0,
+  "mid_2": 76.0,
+  "internal_marks": 78.0,
+  "backlogs": 0,
+  "department_code": "CS",
+  "semester": 4,
+  "gender": "MALE",
+  "age": 20
+}
+```
+* **Success Response (200 OK):**
+```json
+{
+  "predicted_cgpa": 7.82,
+  "model_name": "LinearRegression",
+  "model_version": "cgpa_v1.0.0",
+  "feature_summary": {
+    "academic_average": 75.33,
+    "attendance_risk_score": 0.0,
+    "attendance_risk_category": "NORMAL",
+    "internal_average": 0.78,
+    "mid_term_average": 74.0,
+    "previous_cgpa_trend": 0.0,
+    "backlog_severity_score": 0.0,
+    "backlog_severity_category": "NONE",
+    "academic_stability": 0.0
+  },
+  "top_feature_contributions": {
+    "academic_average": 0.045,
+    "previous_cgpa": 0.612
+  },
+  "status": "success"
+}
+```
+* **Validation Errors (422 Unprocessable Entity):**
+  - Attendance $> 100\%$ or $< 0\%$
+  - Marks $< 0$ or $> 100$
+  - Backlogs $< 0$
+  - CGPA $< 0$ or $> 10$
+
 ### 5.1 Generate Student Prediction
 * **Endpoint:** `POST /api/v1/predictions/generate/{student_id}`
 * **Auth Required:** Yes
