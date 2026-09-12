@@ -1,0 +1,121 @@
+{
+  "preprocessor_version": "1.0.0",
+  "scaling_method": "robust",
+  "num_impute_strategy": "median",
+  "cat_impute_strategy": "constant",
+  "total_input_features": 19,
+  "total_transformed_features": 32,
+  "numerical_features": [
+    "age",
+    "semester",
+    "attendance_percentage",
+    "previous_cgpa",
+    "mid_1",
+    "mid_2",
+    "internal_marks",
+    "backlogs",
+    "academic_average",
+    "attendance_risk_score",
+    "internal_average",
+    "mid_term_average",
+    "previous_cgpa_trend",
+    "backlog_severity_score",
+    "academic_stability"
+  ],
+  "categorical_features": [
+    "gender",
+    "department_code",
+    "attendance_risk_category",
+    "backlog_severity_category"
+  ],
+  "transformed_feature_names": [
+    "age",
+    "semester",
+    "attendance_percentage",
+    "previous_cgpa",
+    "mid_1",
+    "mid_2",
+    "internal_marks",
+    "backlogs",
+    "academic_average",
+    "attendance_risk_score",
+    "internal_average",
+    "mid_term_average",
+    "previous_cgpa_trend",
+    "backlog_severity_score",
+    "academic_stability",
+    "enc_gender_FEMALE",
+    "enc_gender_MALE",
+    "enc_gender_OTHER",
+    "enc_department_code_AI",
+    "enc_department_code_CIVIL",
+    "enc_department_code_CS",
+    "enc_department_code_DS",
+    "enc_department_code_ECE",
+    "enc_department_code_EEE",
+    "enc_department_code_IT",
+    "enc_department_code_MECH",
+    "enc_attendance_risk_category_AT_RISK",
+    "enc_attendance_risk_category_CRITICAL",
+    "enc_attendance_risk_category_NORMAL",
+    "enc_backlog_severity_category_MODERATE",
+    "enc_backlog_severity_category_NONE",
+    "enc_backlog_severity_category_SEVERE"
+  ],
+  "engineered_features_catalog": {
+    "academic_average": {
+      "description": "Composite average of all pre-exam assessments in the current semester.",
+      "formula": "(mid_1 + mid_2 + internal_marks) / 3.0",
+      "availability": "Pre-Exam (Mid-Semester)",
+      "leakage_status": "SAFE (Pre-Exam Only)"
+    },
+    "attendance_risk_score": {
+      "description": "Continuous attendance deficit risk score (0.0 for full attendance, 1.0 for severe deficit).",
+      "formula": "max(0.0, (75.0 - attendance_percentage)) / 75.0",
+      "availability": "Pre-Exam (Ongoing Semester)",
+      "leakage_status": "SAFE (Pre-Exam Only)"
+    },
+    "attendance_risk_category": {
+      "description": "Institutional attendance risk category: CRITICAL (<65%), AT_RISK (65-74%), NORMAL (>=75%).",
+      "formula": "Categorical binning by university attendance criteria",
+      "availability": "Pre-Exam (Ongoing Semester)",
+      "leakage_status": "SAFE (Pre-Exam Only)"
+    },
+    "internal_average": {
+      "description": "Normalized internal marks continuous fraction [0.0, 1.0].",
+      "formula": "internal_marks / 100.0",
+      "availability": "Pre-Exam (Ongoing Semester)",
+      "leakage_status": "SAFE (Pre-Exam Only)"
+    },
+    "mid_term_average": {
+      "description": "Mean of Mid-Term 1 and Mid-Term 2 examinations.",
+      "formula": "(mid_1 + mid_2) / 2.0",
+      "availability": "Pre-Exam (Mid-Semester)",
+      "leakage_status": "SAFE (Pre-Exam Only)"
+    },
+    "previous_cgpa_trend": {
+      "description": "Historical delta in previous CGPA between t-1 and earlier semesters (strictly past records).",
+      "formula": "previous_cgpa[t-1] - previous_cgpa[t-2] (strictly prior semesters; 0.0 for semester 1)",
+      "availability": "Semester Start (Past Academic History)",
+      "leakage_status": "SAFE (Strictly Historical < t)"
+    },
+    "backlog_severity_score": {
+      "description": "Continuous normalized backlog severity score [0.0, 1.0].",
+      "formula": "min(1.0, backlogs / 5.0)",
+      "availability": "Semester Start / Enrollment",
+      "leakage_status": "SAFE (Known at Semester Registration)"
+    },
+    "backlog_severity_category": {
+      "description": "Categorical backlog severity level: NONE (0), MODERATE (1-2), SEVERE (>=3).",
+      "formula": "Binned category based on backlog count",
+      "availability": "Semester Start / Enrollment",
+      "leakage_status": "SAFE (Known at Semester Registration)"
+    },
+    "academic_stability": {
+      "description": "Standard deviation of past historical CGPAs prior to current semester (strictly past < t).",
+      "formula": "std(previous_cgpa[1...t-1]) (0.0 for semesters <= 2)",
+      "availability": "Semester Start (Past Academic History)",
+      "leakage_status": "SAFE (Strictly Historical < t)"
+    }
+  }
+}

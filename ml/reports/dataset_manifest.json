@@ -1,0 +1,30 @@
+{
+  "dataset_name": "Benchmark_Academic_Cohort",
+  "source_type": "CSV",
+  "source_path": "C:\\Users\\shrey\\OneDrive\\Desktop\\ml based\\ML-Based-Success-predictor\\ml\\data\\raw\\academic_records_benchmark.csv",
+  "record_count": 715,
+  "column_count": 16,
+  "sha256_hash": "a1ccbc6252c8676205a1ddbaf6d8ed71de77642c210df7513f19ff36828be0a7",
+  "columns_original": [
+    "student_number",
+    "name",
+    "gender",
+    "age",
+    "department_code",
+    "semester",
+    "academic_year",
+    "attendance_percentage",
+    "previous_cgpa",
+    "mid_1",
+    "mid_2",
+    "internal_marks",
+    "backlogs",
+    "semester_cgpa",
+    "grade",
+    "risk_level"
+  ],
+  "columns_mapped": {},
+  "columns_dropped": [],
+  "created_at_utc": "2026-09-12T19:57:38.109768+00:00",
+  "is_canonical": true
+}

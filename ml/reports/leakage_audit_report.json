@@ -1,0 +1,74 @@
+{
+  "audit_title": "Phase 2 \u2014 ML Preprocessing Data Leakage Audit",
+  "audit_timestamp_utc": "2026-09-12T19:57:38.111866+00:00",
+  "target_leakage_in_X": true,
+  "target_leakage_in_transformed": true,
+  "student_crossover_in_splits": true,
+  "temporal_violations_in_splits": true,
+  "overall_audit_status": "PASS",
+  "feature_audit_matrix": [
+    {
+      "feature": "academic_average",
+      "source": "mid_1, mid_2, internal_marks",
+      "available_at_prediction_time": "Pre-Exam (Mid-Semester)",
+      "leakage_risk": "None",
+      "status": "PASS"
+    },
+    {
+      "feature": "attendance_risk_score",
+      "source": "attendance_percentage",
+      "available_at_prediction_time": "Pre-Exam (Ongoing Semester)",
+      "leakage_risk": "None",
+      "status": "PASS"
+    },
+    {
+      "feature": "attendance_risk_category",
+      "source": "attendance_percentage",
+      "available_at_prediction_time": "Pre-Exam (Ongoing Semester)",
+      "leakage_risk": "None",
+      "status": "PASS"
+    },
+    {
+      "feature": "internal_average",
+      "source": "internal_marks",
+      "available_at_prediction_time": "Pre-Exam (Ongoing Semester)",
+      "leakage_risk": "None",
+      "status": "PASS"
+    },
+    {
+      "feature": "mid_term_average",
+      "source": "mid_1, mid_2",
+      "available_at_prediction_time": "Pre-Exam (Mid-Semester)",
+      "leakage_risk": "None",
+      "status": "PASS"
+    },
+    {
+      "feature": "previous_cgpa_trend",
+      "source": "previous_cgpa, semester",
+      "available_at_prediction_time": "Semester Start (Past Academic History)",
+      "leakage_risk": "Target/Future Leakage Protected",
+      "status": "PASS"
+    },
+    {
+      "feature": "backlog_severity_score",
+      "source": "backlogs",
+      "available_at_prediction_time": "Semester Start / Enrollment",
+      "leakage_risk": "None",
+      "status": "PASS"
+    },
+    {
+      "feature": "backlog_severity_category",
+      "source": "backlogs",
+      "available_at_prediction_time": "Semester Start / Enrollment",
+      "leakage_risk": "None",
+      "status": "PASS"
+    },
+    {
+      "feature": "academic_stability",
+      "source": "previous_cgpa, semester",
+      "available_at_prediction_time": "Semester Start (Past Academic History)",
+      "leakage_risk": "Target/Future Leakage Protected",
+      "status": "PASS"
+    }
+  ]
+}
