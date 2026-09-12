@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Student } from '../types';
+import type { CGPAExplainedResponse, RiskExplainedResponse } from '../types';
 import { studentApi } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Alert } from '../components/ui/Alert';
-import { GraduationCap, LogOut, BookOpen, Calendar, Award, CheckCircle, TrendingUp } from 'lucide-react';
+import ExplanationPanel from '../components/ExplanationPanel';
+import { GraduationCap, LogOut, BookOpen, Calendar, Award, CheckCircle, TrendingUp, Brain, Zap } from 'lucide-react';
 
 export const StudentPortalPage: React.FC = () => {
   const { user, logout } = useAuth();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Phase 5: Explanation state
+  const [cgpaExplanation, setCgpaExplanation] = useState<CGPAExplainedResponse | null>(null);
+  const [riskExplanation, setRiskExplanation] = useState<RiskExplainedResponse | null>(null);
+  const [explainLoading, setExplainLoading] = useState<'cgpa' | 'risk' | null>(null);
+  const [explainError, setExplainError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMyProfile = async () => {
@@ -32,6 +40,68 @@ export const StudentPortalPage: React.FC = () => {
 
     fetchMyProfile();
   }, [user]);
+
+  // Phase 5: Explain handlers using latest semester record
+  const getLatestRecordPayload = () => {
+    if (!student || !student.academic_records || student.academic_records.length === 0) return null;
+    const sorted = [...student.academic_records].sort((a, b) => b.semester - a.semester);
+    const latest = sorted[0];
+    return {
+      attendance_percentage: latest.attendance_percentage ?? 75,
+      previous_cgpa: latest.previous_cgpa ?? student.cumulative_gpa ?? 7.0,
+      mid_1: latest.mid_1 ?? 70,
+      mid_2: latest.mid_2 ?? 70,
+      internal_marks: latest.internal_marks ?? 70,
+      backlogs: latest.backlogs ?? 0,
+      department_code: student.department_code ?? 'CS',
+      semester: latest.semester,
+      gender: student.gender,
+      age: student.age,
+      student_number: student.student_number,
+    };
+  };
+
+  const handleExplainCGPA = async () => {
+    const payload = getLatestRecordPayload();
+    if (!payload) return;
+    setExplainLoading('cgpa');
+    setExplainError(null);
+    try {
+      const res = await fetch('/api/v1/predictions/cgpa/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setCgpaExplanation(data);
+    } catch (e: any) {
+      setExplainError('Failed to generate CGPA explanation. Please try again.');
+    } finally {
+      setExplainLoading(null);
+    }
+  };
+
+  const handleExplainRisk = async () => {
+    const payload = getLatestRecordPayload();
+    if (!payload) return;
+    setExplainLoading('risk');
+    setExplainError(null);
+    try {
+      const res = await fetch('/api/v1/predictions/risk/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setRiskExplanation(data);
+    } catch (e: any) {
+      setExplainError('Failed to generate Risk explanation. Please try again.');
+    } finally {
+      setExplainLoading(null);
+    }
+  };
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -194,6 +264,91 @@ export const StudentPortalPage: React.FC = () => {
                 )}
               </div>
             </div>
+
+            {/* Phase 5: AI Insights Section */}
+            {student.academic_records && student.academic_records.length > 0 && (
+              <div style={{ marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.5rem' }}>
+                  <Brain size={22} color="#818cf8" />
+                  <h2 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0 }}>
+                    AI Insights & Explainability
+                  </h2>
+                  <span
+                    style={{
+                      fontSize: '0.65rem',
+                      fontWeight: 700,
+                      color: '#818cf8',
+                      background: 'rgba(129,140,248,0.12)',
+                      border: '1px solid rgba(129,140,248,0.25)',
+                      borderRadius: '4px',
+                      padding: '2px 7px',
+                      letterSpacing: '0.07em',
+                    }}
+                  >
+                    PHASE 5 — XAI
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+                  Understand <em>why</em> the AI predicts your academic outcomes — powered by SHAP explanations.
+                </p>
+
+                {explainError && (
+                  <Alert variant="error" style={{ marginBottom: '1rem' }}>
+                    {explainError}
+                  </Alert>
+                )}
+
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                  <Button
+                    id="btn-explain-cgpa"
+                    variant="primary"
+                    size="sm"
+                    icon={<Zap size={15} />}
+                    onClick={handleExplainCGPA}
+                    disabled={explainLoading !== null}
+                    style={{
+                      background: 'linear-gradient(135deg, #818cf8 0%, #6366f1 100%)',
+                      border: 'none',
+                    }}
+                  >
+                    {explainLoading === 'cgpa' ? 'Generating...' : 'Explain My CGPA Prediction'}
+                  </Button>
+
+                  <Button
+                    id="btn-explain-risk"
+                    variant="outline"
+                    size="sm"
+                    icon={<Brain size={15} />}
+                    onClick={handleExplainRisk}
+                    disabled={explainLoading !== null}
+                    style={{ borderColor: 'rgba(129,140,248,0.35)', color: '#818cf8' }}
+                  >
+                    {explainLoading === 'risk' ? 'Generating...' : 'Explain My Risk Assessment'}
+                  </Button>
+                </div>
+
+                {/* CGPA Explanation Result */}
+                {cgpaExplanation && (
+                  <ExplanationPanel
+                    explanation={cgpaExplanation.explanation}
+                    taskType="cgpa_regression"
+                    predictedCGPA={cgpaExplanation.predicted_cgpa}
+                  />
+                )}
+
+                {/* Risk Explanation Result */}
+                {riskExplanation && (
+                  <div style={{ marginTop: cgpaExplanation ? '16px' : '0' }}>
+                    <ExplanationPanel
+                      explanation={riskExplanation.explanation}
+                      taskType="risk_classification"
+                      riskLevel={riskExplanation.risk_level}
+                      riskScore={riskExplanation.risk_score}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ) : null}
       </main>

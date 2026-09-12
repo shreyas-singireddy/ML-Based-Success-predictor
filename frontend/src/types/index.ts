@@ -119,3 +119,85 @@ export interface CSVImportResult {
   duplicate_policy_applied: string;
   message: string;
 }
+
+// ---------------------------------------------------------------------------
+// Phase 5 — Explainable AI Types
+// ---------------------------------------------------------------------------
+
+export type ImpactLevel = 'HIGH' | 'MEDIUM' | 'LOW';
+export type ContributionDirection = 'positive' | 'negative';
+export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export interface FeatureContribution {
+  feature_name: string;
+  display_name: string;
+  original_value: number | null;
+  unit: string;
+  shap_value: number;
+  contribution_direction: ContributionDirection;
+  impact_level: ImpactLevel;
+  is_demographic: boolean;
+  student_explanation: string;
+}
+
+export interface ExplanationData {
+  model_name: string;
+  model_version: string;
+  model_type: string;
+  explainer_type: string;
+  explanation_available: boolean;
+  task_type: string;
+  explained_class: string | null;
+  top_factors: FeatureContribution[];
+  positive_factors: FeatureContribution[];
+  negative_factors: FeatureContribution[];
+  base_value: number;
+  shap_sum: number;
+  top_global_features: Record<string, number>;
+  fairness_note: string;
+  contains_demographic_factors: boolean;
+}
+
+export interface CGPAExplainedResponse {
+  predicted_cgpa: number;
+  model_name: string;
+  model_version: string;
+  prediction_context: string;
+  feature_summary: Record<string, number | string>;
+  top_feature_contributions: Record<string, number> | null;
+  status: string;
+  explanation: ExplanationData;
+}
+
+export interface RiskExplainedResponse {
+  predicted_cgpa: number;
+  grade: string;
+  performance_category: string;
+  risk_level: RiskLevel;
+  risk_score: number;
+  risk_probabilities: Record<RiskLevel, number>;
+  risk_factors: Array<{
+    factor_name: string;
+    display_name: string;
+    value: number | string;
+    score: number;
+    severity: string;
+    description: string;
+  }>;
+  model_name: string;
+  model_version: string;
+  prediction_context: string;
+  status: string;
+  explanation: ExplanationData;
+}
+
+export interface GlobalImportanceResponse {
+  model_name: string;
+  model_version: string;
+  task_type: string;
+  explainer_type: string;
+  global_feature_importance: Record<string, number>;
+  top_features: Record<string, number>;
+  fairness_note: string;
+}
+

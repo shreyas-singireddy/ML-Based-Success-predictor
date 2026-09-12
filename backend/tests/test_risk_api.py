@@ -2,7 +2,9 @@
 Tests for AI Academic Risk Prediction API Endpoint (POST /api/v1/predictions/risk).
 """
 
+# pyrefly: ignore [missing-import]
 import pytest
+# pyrefly: ignore [missing-import]
 from httpx import AsyncClient
 
 
