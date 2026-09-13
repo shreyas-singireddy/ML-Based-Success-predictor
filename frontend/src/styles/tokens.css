@@ -1,0 +1,89 @@
+/* ============================================================
+   STUDENT SUCCESS PREDICTOR — DESIGN TOKENS (Phase 6)
+   Centralized palette, typography, spacing, radius, motion.
+   ============================================================ */
+
+:root {
+  color-scheme: dark;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Core surfaces */
+  --bg-app: #050505;
+  --bg-secondary: #0f0f11;
+  --bg-panel: #18181b;
+  --bg-panel-elevated: #1f1f23;
+
+  /* Legacy aliases (kept for existing components) */
+  --bg-surface: var(--bg-secondary);
+  --bg-surface-elevated: var(--bg-panel);
+  --bg-glass: rgba(15, 15, 17, 0.82);
+  --bg-glass-hover: rgba(24, 24, 27, 0.92);
+
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+
+  /* Hairlines */
+  --hairline: rgba(255, 255, 255, 0.1);
+  --hairline-subtle: rgba(255, 255, 255, 0.06);
+  --border-subtle: var(--hairline);
+  --border-glass: var(--hairline);
+  --border-focus: #6366f1;
+
+  /* AI accent */
+  --color-primary: #6366f1;
+  --color-primary-hover: #7c7cf8;
+  --color-primary-pressed: #4338ca;
+  --color-primary-glow: rgba(99, 102, 241, 0.25);
+
+  /* Semantic status (non-risk usage kept minimal) */
+  --color-success: #55a630;
+  --color-success-bg: rgba(85, 166, 48, 0.16);
+  --color-warning: #ffb703;
+  --color-warning-bg: rgba(255, 183, 3, 0.14);
+  --color-danger: #ff2d20;
+  --color-danger-bg: rgba(255, 45, 32, 0.14);
+  --color-info: #818cf8;
+  --color-info-bg: rgba(129, 140, 248, 0.14);
+
+  /* Risk scale — semantic color strictly for risk information */
+  --risk-minimum: #55a630;
+  --risk-low: #aacc00;
+  --risk-medium: #ffb703;
+  --risk-high: #ff2d20;
+  --risk-critical: #8f0f0f;
+  --risk-neutral: #71717a;
+
+  /* Shadows (kept subtle per design philosophy) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 32px -6px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 0 1px rgba(99, 102, 241, 0.28), 0 8px 24px -8px rgba(99, 102, 241, 0.4);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 140ms;
+  --duration-base: 280ms;
+  --duration-slow: 640ms;
+
+  /* Legacy transition aliases */
+  --transition-fast: var(--duration-fast) var(--ease-standard);
+  --transition-normal: var(--duration-base) var(--ease-standard);
+
+  /* Layout */
+  --content-max: 1200px;
+  --rail-width: 264px;
+  --nav-height: 64px;
+}

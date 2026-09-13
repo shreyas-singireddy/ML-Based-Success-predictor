@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Alert } from '../components/ui/Alert';
-import { GraduationCap, ShieldCheck, UserCheck, BookOpen } from 'lucide-react';
+import { GeneratedLight } from '../components/landing/GeneratedLight';
+import { BrandMark } from '../components/landing/LandingNav';
+import { ShieldCheck, UserCheck, BookOpen, ArrowRight } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get('mode') === 'register' ? 'register' : 'login';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,7 +28,10 @@ export const LoginPage: React.FC = () => {
       const res = await api.post('/auth/login', { email: email.trim(), password });
       login(res.data.access_token, res.data.user);
     } catch (err: any) {
-      const msg = err.response?.data?.error?.message || err.response?.data?.detail || 'Invalid email or password';
+      const msg =
+        err.response?.data?.error?.message ||
+        err.response?.data?.detail ||
+        'Invalid email or password';
       setError(msg);
     } finally {
       setLoading(false);
@@ -35,53 +44,46 @@ export const LoginPage: React.FC = () => {
     setError(null);
   };
 
-  return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.5rem',
-      }}
-    >
-      <div
-        className="glass-panel"
-        style={{
-          width: '100%',
-          maxWidth: '460px',
-          padding: '2.5rem',
-          boxShadow: 'var(--shadow-lg)'
-        }}
-      >
-        {/* Header with Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div
-            style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(135deg, var(--color-primary), #8b5cf6)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 1rem auto',
-              boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)'
-            }}
-          >
-            <GraduationCap size={32} color="#ffffff" />
+  if (mode === 'register') {
+    return (
+      <div className="login-scene">
+        <GeneratedLight intensity={0.5} />
+        <div className="login-card">
+          <div className="login-head">
+            <BrandMark size={44} />
+            <span className="mono-label">ACCOUNT PROVISIONING // INSTITUTION-MANAGED</span>
           </div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-            Student Success Predictor
-          </h1>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
-            Phase 1 — Student Data Management Portal
+          <h1 className="login-title">Registration is handled by your institution</h1>
+          <p className="login-sub">
+            Accounts are provisioned by your university administration, not self-signup.
+            Contact your faculty coordinator for access.
           </p>
+          <div className="hero-cta">
+            <Link to="/login" className="btn btn-primary">
+              BACK TO SIGN IN <ArrowRight size={15} />
+            </Link>
+          </div>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="login-scene">
+      <GeneratedLight intensity={0.6} />
+      <div className="login-card">
+        <div className="login-head">
+          <BrandMark size={44} />
+          <span className="mono-label">STUDENT SUCCESS PREDICTOR // V6</span>
+        </div>
+
+        <h1 className="login-title">SIGN IN TO YOUR ACADEMIC INTELLIGENCE</h1>
+        <p className="login-sub">
+          Real records. Explainable predictions. Nothing fabricated.
+        </p>
 
         {error && <Alert variant="error">{error}</Alert>}
 
-        {/* Login Form */}
         <form onSubmit={handleSubmit}>
           <Input
             label="Institutional Email"
@@ -89,7 +91,8 @@ export const LoginPage: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            placeholder="admin@university.edu"
+            autoComplete="email"
+            placeholder="name@university.edu"
           />
           <Input
             label="Password"
@@ -97,47 +100,44 @@ export const LoginPage: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            autoComplete="current-password"
             placeholder="••••••••••••"
           />
 
           <Button
             type="submit"
             loading={loading}
-            style={{ width: '100%', marginTop: '0.5rem', marginBottom: '1.5rem' }}
+            style={{ width: '100%', marginTop: '0.6rem' }}
           >
-            Sign In to Dashboard
+            {loading ? 'AUTHENTICATING…' : 'ACCESS DASHBOARD'}
           </Button>
         </form>
 
-        {/* Quick Demo Login Credentials */}
-        <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1.25rem' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.75rem', textAlign: 'center' }}>
-            Quick Demo Autofill
+        <div className="login-demo">
+          <span className="mono-label" style={{ display: 'block', marginBottom: '0.6rem' }}>
+            QUICK DEMO AUTOFILL
           </span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+          <div className="login-demo-actions">
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
+              className="btn btn-outline btn-sm"
               onClick={() => handleQuickLogin('admin@university.edu')}
-              style={{ fontSize: '0.75rem', padding: '0.4rem 0.2rem' }}
             >
-              <ShieldCheck size={14} color="var(--color-primary)" /> Admin
+              <ShieldCheck size={13} /> Admin
             </button>
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
+              className="btn btn-outline btn-sm"
               onClick={() => handleQuickLogin('faculty.cs@university.edu')}
-              style={{ fontSize: '0.75rem', padding: '0.4rem 0.2rem' }}
             >
-              <UserCheck size={14} color="var(--color-info)" /> Faculty
+              <UserCheck size={13} /> Faculty
             </button>
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
+              className="btn btn-outline btn-sm"
               onClick={() => handleQuickLogin('student.alice@university.edu')}
-              style={{ fontSize: '0.75rem', padding: '0.4rem 0.2rem' }}
             >
-              <BookOpen size={14} color="var(--color-success)" /> Student
+              <BookOpen size={13} /> Student
             </button>
           </div>
         </div>

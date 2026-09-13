@@ -19,8 +19,10 @@ from backend.app.schemas.explanation import (
     FeatureContributionSchema,
     GlobalImportanceResponse,
 )
+from backend.app.schemas.what_if import WhatIfSimulationRequest, WhatIfSimulationResponse
 from backend.app.services.prediction_service import prediction_service
 from backend.app.services.risk_service import academic_risk_service
+from backend.app.services.what_if_service import what_if_simulation_service
 from ml.explainability.explanation_service import explanation_service
 from ml.explainability.feature_catalog import GLOBAL_FAIRNESS_NOTE
 
@@ -295,6 +297,55 @@ async def predict_risk_with_explanation(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate risk explanation. Please verify input data.",
+        )
+
+
+# ---------------------------------------------------------------------------
+# Phase 7: What-If Academic Simulator
+# ---------------------------------------------------------------------------
+
+@router.post(
+    "/what-if",
+    response_model=WhatIfSimulationResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Run What-If Academic Simulation",
+    description=(
+        "Simulates hypothetical academic improvements and returns predicted CGPA, "
+        "risk level, performance category, and delta comparison against baseline. "
+        "Uses existing ML models — no retraining. Side-effect free."
+    ),
+)
+async def run_what_if_simulation(
+    request: WhatIfSimulationRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+) -> WhatIfSimulationResponse:
+    try:
+        response = await what_if_simulation_service.simulate(request, db, current_user)
+        return response
+    except ValueError as ve:
+        logger.warning(f"What-If validation error: {ve}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(ve),
+        )
+    except PermissionError as pe:
+        logger.warning(f"Unauthorized What-If access: {pe}")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(pe),
+        )
+    except FileNotFoundError as fnf:
+        logger.error(f"What-If artifact missing: {fnf}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI Simulation service is currently unavailable. Trained model artifacts are missing.",
+        )
+    except Exception as e:
+        logger.error(f"What-If simulation failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to run simulation. Please verify input data.",
         )
 
 

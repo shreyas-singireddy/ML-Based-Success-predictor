@@ -1,0 +1,354 @@
+/* ============================================================
+   COMPONENTS — buttons, inputs, badges, tables, modals
+   ============================================================ */
+
+/* ---------------- Buttons ---------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.92rem;
+  padding: 0.58rem 1.15rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--hairline);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition:
+    background var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--hairline);
+  background: var(--bg-panel-elevated);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--color-primary-pressed);
+  border-color: var(--color-primary-pressed);
+}
+
+.btn-secondary {
+  background: var(--bg-panel);
+  border-color: var(--hairline);
+  color: var(--text-primary);
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--hairline);
+  color: var(--text-secondary);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.btn-danger {
+  background: var(--color-danger-bg);
+  border-color: rgba(255, 45, 32, 0.35);
+  color: var(--color-danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(255, 45, 32, 0.2);
+  color: #ff6b61;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.btn-sm {
+  padding: 0.34rem 0.75rem;
+  font-size: 0.82rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-lg {
+  padding: 0.85rem 1.75rem;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+}
+
+/* ---------------- Inputs & Form Controls ---------------- */
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.input-label {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.input-control {
+  background: var(--bg-secondary);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.9rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  width: 100%;
+}
+
+.input-control:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+.input-control::placeholder {
+  color: var(--text-muted);
+}
+
+.input-control.border-danger {
+  border-color: var(--color-danger);
+}
+
+.input-error {
+  font-size: 0.8rem;
+  color: var(--color-danger);
+}
+
+/* Legacy glass surfaces — redefined minimal (hairline based) */
+.glass-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.glass-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--hairline-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.glass-card:hover {
+  border-color: var(--hairline);
+}
+
+/* ---------------- Badges ---------------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.22rem 0.6rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--hairline);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+}
+
+.badge-success { background: var(--color-success-bg); color: var(--color-success); border-color: rgba(85, 166, 48, 0.32); }
+.badge-warning { background: var(--color-warning-bg); color: var(--color-warning); border-color: rgba(255, 183, 3, 0.32); }
+.badge-danger  { background: var(--color-danger-bg);  color: var(--color-danger);  border-color: rgba(255, 45, 32, 0.32); }
+.badge-info    { background: var(--color-info-bg);    color: var(--color-info);    border-color: rgba(129, 140, 248, 0.32); }
+.badge-neutral { background: rgba(255, 255, 255, 0.06); color: var(--text-secondary); border-color: var(--hairline-subtle); }
+
+/* Risk badge — semantic, never color alone (always paired with text) */
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.7rem;
+  border-radius: var(--radius-full);
+  border: 1px solid;
+}
+
+.risk-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.risk-badge--low,
+.risk-badge--minimum {
+  color: var(--risk-minimum);
+  border-color: rgba(85, 166, 48, 0.4);
+  background: rgba(85, 166, 48, 0.1);
+}
+
+.risk-badge--medium {
+  color: var(--risk-medium);
+  border-color: rgba(255, 183, 3, 0.4);
+  background: rgba(255, 183, 3, 0.1);
+}
+
+.risk-badge--high {
+  color: var(--risk-high);
+  border-color: rgba(255, 45, 32, 0.4);
+  background: rgba(255, 45, 32, 0.1);
+}
+
+.risk-badge--critical {
+  color: #ff6b61;
+  border-color: rgba(255, 45, 32, 0.5);
+  background: rgba(255, 45, 32, 0.16);
+}
+
+/* ---------------- Tables ---------------- */
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--hairline-subtle);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.92rem;
+}
+
+.data-table th {
+  background: var(--bg-secondary);
+  padding: 0.8rem 1.25rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--hairline-subtle);
+}
+
+.data-table td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--hairline-subtle);
+  color: var(--text-primary);
+}
+
+.data-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ---------------- Modal ---------------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 3, 5, 0.78);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 1.5rem;
+  animation: fadeIn 180ms var(--ease-out-expo);
+}
+
+.modal-content {
+  background: var(--bg-panel);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid var(--hairline-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-body {
+  padding: 1.5rem 1.75rem;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 1.25rem 1.75rem;
+  border-top: 1px solid var(--hairline-subtle);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: var(--bg-secondary);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.985); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ---------------- Alert ---------------- */
+
+.alert {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  padding: 0.95rem 1.1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}

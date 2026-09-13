@@ -6,13 +6,15 @@ interface AlertProps {
   title?: string;
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export const Alert: React.FC<AlertProps> = ({
   variant = 'info',
   title,
   children,
-  className = ''
+  className = '',
+  style
 }) => {
   const icons = {
     info: <Info size={20} color="var(--color-info)" />,
@@ -38,6 +40,7 @@ export const Alert: React.FC<AlertProps> = ({
   return (
     <div
       className={className}
+      role={variant === 'error' ? 'alert' : undefined}
       style={{
         background: bgStyles[variant],
         border: `1px solid ${borderStyles[variant]}`,
@@ -46,7 +49,8 @@ export const Alert: React.FC<AlertProps> = ({
         display: 'flex',
         gap: '0.75rem',
         alignItems: 'flex-start',
-        marginBottom: '1rem'
+        marginBottom: '1rem',
+        ...style
       }}
     >
       <div style={{ flexShrink: 0, marginTop: '2px' }}>{icons[variant]}</div>

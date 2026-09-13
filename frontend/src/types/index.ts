@@ -201,3 +201,163 @@ export interface GlobalImportanceResponse {
   fairness_note: string;
 }
 
+// ---------------------------------------------------------------------------
+// Phase 3 — CGPA Prediction API Types
+// ---------------------------------------------------------------------------
+
+export interface CGPAPredictionRequest {
+  attendance_percentage: number;
+  previous_cgpa: number;
+  mid_1: number;
+  mid_2: number;
+  internal_marks: number;
+  backlogs: number;
+  department_code?: string;
+  semester?: number;
+  gender?: string;
+  age?: number;
+  student_number?: string;
+}
+
+export interface FeatureSummary {
+  academic_average: number;
+  attendance_risk_score: number;
+  attendance_risk_category: string;
+  internal_average: number;
+  mid_term_average: number;
+  previous_cgpa_trend: number;
+  backlog_severity_score: number;
+  backlog_severity_category: string;
+  academic_stability: number;
+}
+
+export interface CGPAPredictionResponse {
+  predicted_cgpa: number;
+  model_name: string;
+  model_version: string;
+  prediction_context: string;
+  feature_summary: FeatureSummary;
+  top_feature_contributions: Record<string, number> | null;
+  status: string;
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4 — Academic Risk API Types
+// ---------------------------------------------------------------------------
+
+export interface RiskPredictionRequest {
+  student_number?: string;
+  gender?: string;
+  age?: number;
+  department_code?: string;
+  semester?: number;
+  attendance_percentage: number;
+  previous_cgpa: number;
+  mid_1: number;
+  mid_2: number;
+  internal_marks: number;
+  backlogs: number;
+}
+
+export interface RiskFactorDetail {
+  factor: string;
+  level: string;
+  value: number | string;
+  detail: string;
+}
+
+export interface RiskPredictionResponse {
+  predicted_cgpa: number;
+  grade: string;
+  performance_category: string;
+  risk_level: RiskLevel;
+  risk_score: number;
+  risk_probabilities: Record<RiskLevel, number>;
+  risk_factors: RiskFactorDetail[];
+  model_name: string;
+  model_version: string;
+  prediction_context: string;
+  status: string;
+}
+
+export interface ApiErrorBody {
+  error?: {
+    code?: string;
+    message?: string;
+  };
+  detail?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Phase 7 — What-If Academic Simulator Types
+// ---------------------------------------------------------------------------
+
+export interface WhatIfHypotheticalInputs {
+  attendance_percentage?: number;
+  mid_1?: number;
+  mid_2?: number;
+  internal_marks?: number;
+  backlogs?: number;
+  previous_cgpa?: number;
+}
+
+export interface WhatIfSimulationRequest {
+  student_number?: string;
+  semester?: number;
+  baseline_inputs?: CGPAPredictionRequest;
+  hypothetical_inputs: WhatIfHypotheticalInputs;
+}
+
+export interface AcademicState {
+  attendance_percentage: number;
+  mid_1: number;
+  mid_2: number;
+  internal_marks: number;
+  backlogs: number;
+  previous_cgpa: number;
+  semester: number;
+  department_code: string;
+}
+
+export interface SimulationOutcome {
+  predicted_cgpa: number;
+  grade: string;
+  performance_category: string;
+  risk_level: RiskLevel;
+  risk_score: number;
+  risk_probabilities: Record<RiskLevel, number>;
+  academic_state: AcademicState;
+}
+
+export interface FactorDelta {
+  factor: string;
+  display_name: string;
+  baseline_value: number;
+  simulated_value: number;
+  delta: number;
+  unit: string;
+}
+
+export interface SimulationDelta {
+  cgpa_delta: number;
+  cgpa_trend: 'IMPROVED' | 'UNCHANGED' | 'WORSENED';
+  risk_score_delta: number;
+  risk_transition: string;
+  risk_trend: 'IMPROVED' | 'UNCHANGED' | 'WORSENED';
+  performance_category_transition: string;
+  modified_factors: FactorDelta[];
+  overall_impact: 'IMPROVED' | 'UNCHANGED' | 'WORSENED';
+}
+
+export interface WhatIfSimulationResponse {
+  baseline: SimulationOutcome;
+  simulation: SimulationOutcome;
+  delta: SimulationDelta;
+  model_name: string;
+  model_version: string;
+  risk_model_name: string;
+  risk_model_version: string;
+  status: string;
+  disclaimer: string;
+}
+
