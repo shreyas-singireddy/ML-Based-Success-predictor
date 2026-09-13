@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Lightbulb, ArrowRight, Bot } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { AppPageHeader } from '../../components/layout/AppPageHeader';
 import { MetricDisplay } from '../../components/dashboard/MetricDisplay';
 import { CGPATrendChart, TrendPoint } from '../../components/dashboard/CGPATrendChart';
@@ -11,6 +12,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { useStudentData } from '../../contexts/StudentDataContext';
 import { buildPredictionPayload, getLatestRecord } from '../../lib/prediction';
 import { predictionApi } from '../../services/predictionApi';
+import { recommendationApi } from '../../services/recommendationApi';
 import { useAsync } from '../../hooks/useAsync';
 import { riskColor } from '../../lib/risk';
 
@@ -26,11 +28,16 @@ export const DashboardPage: React.FC = () => {
     () => payload?.risk ? predictionApi.predictRisk(payload.risk) : Promise.reject(new Error('NO_DATA')),
     [payload]
   );
+  const recs = useAsync(
+    () => payload?.cgpa ? recommendationApi.generate(payload.cgpa) : Promise.reject(new Error('NO_DATA')),
+    [payload]
+  );
 
   useEffect(() => {
     if (payload) {
       cgpa.run();
       risk.run();
+      recs.run();
     }
   }, [payload]);
 
@@ -119,6 +126,122 @@ export const DashboardPage: React.FC = () => {
           accent={backlogsTotal > 0 ? 'var(--risk-high)' : undefined}
         />
       </div>
+
+      <div
+        className="panel"
+        style={{
+          marginBottom: '1.25rem',
+          padding: '1rem 1.25rem',
+          background: 'linear-gradient(90deg, rgba(56, 189, 248, 0.1) 0%, var(--bg-panel) 100%)',
+          border: '1px solid rgba(56, 189, 248, 0.3)',
+          borderRadius: 'var(--radius-md)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.8rem',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flex: 1, minWidth: '260px' }}>
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              background: 'var(--color-info)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              flexShrink: 0,
+            }}
+          >
+            <Bot size={18} />
+          </div>
+          <div>
+            <div className="mono-label" style={{ fontSize: '0.7rem', color: 'var(--color-info)', marginBottom: '0.25rem' }}>
+              GENAI ACADEMIC ASSISTANT // GROUNDED ANSWERS
+            </div>
+            <div style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text-primary)' }}>
+              Ask anything about your CGPA, risk, what drives your score, or what-if scenarios.
+            </div>
+          </div>
+        </div>
+
+        <Link
+          to="/app/assistant"
+          className="btn btn-primary btn-sm"
+          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+        >
+          ASK AI ASSISTANT <ArrowRight size={14} />
+        </Link>
+      </div>
+
+      {recs.data && recs.data.recommendations.length > 0 && (
+        <div
+          className="panel"
+          style={{
+            marginBottom: '1.25rem',
+            padding: '1rem 1.25rem',
+            background: 'linear-gradient(90deg, rgba(99, 102, 241, 0.12) 0%, var(--bg-panel) 100%)',
+            border: '1px solid rgba(99, 102, 241, 0.35)',
+            borderRadius: 'var(--radius-md)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.8rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flex: 1, minWidth: '260px' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: 'var(--color-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                flexShrink: 0,
+              }}
+            >
+              <Lightbulb size={18} />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                <span className="mono-label" style={{ fontSize: '0.7rem', color: 'var(--color-primary-hover)' }}>
+                  PRIORITY 01 // {recs.data.recommendations[0].priority}
+                </span>
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    background: 'rgba(255, 255, 255, 0.06)',
+                    padding: '0.1rem 0.4rem',
+                    borderRadius: '3px',
+                    fontFamily: 'var(--font-mono)',
+                    color: 'var(--text-secondary)',
+                  }}
+                >
+                  {recs.data.recommendations[0].category.replace(/_/g, ' ')}
+                </span>
+              </div>
+              <div style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text-primary)' }}>
+                {recs.data.recommendations[0].title}
+              </div>
+            </div>
+          </div>
+
+          <Link
+            to="/app/recommendations"
+            className="btn btn-primary btn-sm"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+          >
+            VIEW ACTION PLAN ({recs.data.recommendations.length}) <ArrowRight size={14} />
+          </Link>
+        </div>
+      )}
 
       <div className="dash-grid">
         <section className="panel dash-panel">

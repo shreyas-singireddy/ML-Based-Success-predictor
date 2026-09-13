@@ -32,6 +32,7 @@ from backend.app.services.risk_service import academic_risk_service
 from backend.app.models.student import StudentProfile
 from backend.app.models.academic_record import SemesterAcademicRecord
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 logger = logging.getLogger("student_predictor.what_if_service")
 
@@ -135,7 +136,7 @@ class WhatIfSimulationService:
         if not request.student_number:
             raise ValueError("Either baseline_inputs or student_number must be provided")
 
-        stmt = select(StudentProfile).where(StudentProfile.student_number == request.student_number)
+        stmt = select(StudentProfile).where(StudentProfile.student_number == request.student_number).options(selectinload(StudentProfile.department))
         result = await db.execute(stmt)
         student = result.scalar_one_or_none()
 
@@ -159,7 +160,7 @@ class WhatIfSimulationService:
             student_number=student.student_number,
             gender=student.gender,
             age=student.age,
-            department_code=student.department_code,
+            department_code=student.department.code if student.department else None,
             semester=semester,
             attendance_percentage=float(latest_record.attendance_percentage or 75.0),
             previous_cgpa=float(latest_record.previous_cgpa or student.cumulative_gpa or 7.0),

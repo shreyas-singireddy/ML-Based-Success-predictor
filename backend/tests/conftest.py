@@ -19,6 +19,13 @@ from backend.app.models.faculty import FacultyProfile
 from backend.app.models.academic_record import SemesterAcademicRecord
 from backend.app.main import app
 
+# --- Test isolation for the GenAI Assistant (Phase 9) ------------------------
+# Force the deterministic fallback provider for every test. This guarantees zero
+# external network calls (Gemini/OpenAI) and fully reproducible grounded output.
+settings.AI_PROVIDER = "fallback"
+settings.GEMINI_API_KEY = ""
+settings.OPENAI_API_KEY = ""
+
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
 test_engine = create_async_engine(

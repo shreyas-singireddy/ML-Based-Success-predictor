@@ -7,6 +7,8 @@ import {
   ShieldAlert,
   Sparkles,
   SlidersHorizontal,
+  Lightbulb,
+  Bot,
   Menu,
   X,
   LogOut,
@@ -28,6 +30,8 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/app/risk', label: 'ACADEMIC RISK', icon: <ShieldAlert size={16} /> },
   { to: '/app/explainability', label: 'EXPLAINABILITY', icon: <Sparkles size={16} /> },
   { to: '/app/what-if', label: 'WHAT-IF', icon: <SlidersHorizontal size={16} /> },
+  { to: '/app/recommendations', label: 'RECOMMENDATIONS', icon: <Lightbulb size={16} /> },
+  { to: '/app/assistant', label: 'AI ASSISTANT', icon: <Bot size={16} /> },
 ];
 
 export const StudentAppLayout: React.FC = () => {

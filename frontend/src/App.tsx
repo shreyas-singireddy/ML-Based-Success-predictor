@@ -13,6 +13,8 @@ import { PredictionPage } from './pages/app/PredictionPage';
 import { RiskPage } from './pages/app/RiskPage';
 import { ExplainabilityPage } from './pages/app/ExplainabilityPage';
 import { WhatIfPage } from './pages/app/WhatIfPage';
+import { RecommendationsPage } from './pages/app/RecommendationsPage';
+import { AssistantPage } from './pages/app/AssistantPage';
 
 const SessionLoading: React.FC = () => (
   <div
@@ -103,6 +105,8 @@ const AppContent: React.FC = () => {
         <Route path="risk" element={<RiskPage />} />
         <Route path="explainability" element={<ExplainabilityPage />} />
         <Route path="what-if" element={<WhatIfPage />} />
+        <Route path="recommendations" element={<RecommendationsPage />} />
+        <Route path="assistant" element={<AssistantPage />} />
       </Route>
 
       <Route

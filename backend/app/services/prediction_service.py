@@ -135,7 +135,7 @@ class CGPAPredictionService:
         if request.student_number and db is not None:
             try:
                 from backend.app.models.student import StudentProfile
-                from backend.app.models.academic_record import AcademicRecord
+                from backend.app.models.academic_record import SemesterAcademicRecord
 
                 # RBAC authorization check if current_user is authenticated
                 if current_user is not None and hasattr(current_user, "role"):
@@ -149,10 +149,10 @@ class CGPAPredictionService:
                             raise PermissionError("Access Denied: Students can only run predictions for their own academic record.")
 
                 stmt = (
-                    select(AcademicRecord)
-                    .join(StudentProfile, AcademicRecord.student_id == StudentProfile.id)
+                    select(SemesterAcademicRecord)
+                    .join(StudentProfile, SemesterAcademicRecord.student_id == StudentProfile.id)
                     .where(StudentProfile.student_number == request.student_number)
-                    .order_by(AcademicRecord.semester.asc())
+                    .order_by(SemesterAcademicRecord.semester.asc())
                 )
                 res = await db.execute(stmt)
                 records = res.scalars().all()

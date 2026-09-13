@@ -55,5 +55,14 @@ class Settings(BaseSettings):
     # CSV Upload limits
     MAX_CSV_UPLOAD_SIZE_MB: int = 10
 
+    # Generative AI Assistant Configuration (Phase 9)
+    AI_PROVIDER: str = "gemini"  # gemini | openai | local | fallback
+    GEMINI_API_KEY: str = ""
+    OPENAI_API_KEY: str = ""
+    AI_MODEL_NAME: str = "gemini-1.5-flash"
+    AI_MAX_OUTPUT_TOKENS: int = 1024
+    AI_TEMPERATURE: float = 0.2
+    AI_RATE_LIMIT_PER_MINUTE: int = 30
+
 
 settings = Settings()

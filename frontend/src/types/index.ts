@@ -361,3 +361,176 @@ export interface WhatIfSimulationResponse {
   disclaimer: string;
 }
 
+// ---------------------------------------------------------------------------
+// Phase 8 — AI Personalized Recommendation Engine Types
+// ---------------------------------------------------------------------------
+
+export type RecommendationCategory =
+  | 'ATTENDANCE'
+  | 'BACKLOG_RECOVERY'
+  | 'EXAM_PREPARATION'
+  | 'INTERNAL_ASSESSMENT'
+  | 'STUDY_IMPROVEMENT'
+  | 'CGPA_IMPROVEMENT'
+  | 'ACADEMIC_HABITS'
+  | 'MAINTAIN_STRENGTH';
+
+export type RecommendationPriority = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+export type RecommendationSource = 'ACADEMIC_DATA' | 'RISK_POLICY' | 'XAI' | 'WHAT_IF_SIMULATION' | 'COMBINED';
+export type ExpectedImpactLevel = 'HIGH' | 'MEDIUM' | 'LOW' | 'UNKNOWN';
+export type TimeHorizon = 'THIS_WEEK' | 'NEXT_30_DAYS' | 'LONGER_TERM';
+
+export interface RecommendationEvidence {
+  factor: string;
+  display_name: string;
+  current_value?: number | string | null;
+  target_or_threshold?: number | string | null;
+  unit: string;
+  source: RecommendationSource;
+  simulated_value?: number | string | null;
+  shap_contribution?: number | null;
+  impact_detail?: string | null;
+}
+
+export interface RecommendationItem {
+  id: string;
+  title: string;
+  priority: RecommendationPriority;
+  category: RecommendationCategory;
+  evidence: RecommendationEvidence[];
+  action: string;
+  expected_impact: ExpectedImpactLevel;
+  source: RecommendationSource;
+  time_horizon: TimeHorizon;
+  risk_factor?: string | null;
+  technical_details?: Record<string, any>;
+}
+
+export interface ActionPlan {
+  this_week: RecommendationItem[];
+  next_30_days: RecommendationItem[];
+  longer_term: RecommendationItem[];
+  simulation_summary?: {
+    baseline_predicted_cgpa: number;
+    simulated_predicted_cgpa: number;
+    cgpa_delta: number;
+    baseline_risk_level: string;
+    simulated_risk_level: string;
+    risk_score_delta: number;
+    risk_transition: string;
+    overall_impact: string;
+    overrides_evaluated?: Record<string, any>;
+  } | null;
+}
+
+export interface RecommendationRequest {
+  student_number?: string;
+  semester?: number;
+  gender?: string;
+  age?: number;
+  department_code?: string;
+  attendance_percentage?: number;
+  previous_cgpa?: number;
+  mid_1?: number;
+  mid_2?: number;
+  internal_marks?: number;
+  backlogs?: number;
+}
+
+export interface RecommendationResponse {
+  student_number?: string;
+  student_name?: string;
+  predicted_cgpa: number;
+  grade: string;
+  performance_category: string;
+  risk_level: RiskLevel;
+  risk_score: number;
+  recommendations: RecommendationItem[];
+  action_plan: ActionPlan;
+  evidence_summary: {
+    factors_analyzed: number;
+    rules_evaluated: number;
+    candidates_generated: number;
+    recommendations_returned: number;
+    simulation_levers_tested: number;
+    shap_evidence_attached: boolean;
+  };
+  model_version_info: Record<string, string>;
+  policy_version: string;
+  generated_at: string;
+  disclaimer: string;
+  status: string;
+}
+
+// ---------------------------------------------------------------------------
+// Phase 9 — GenAI Academic Assistant Types
+// ---------------------------------------------------------------------------
+
+export type AssistantIntent =
+  | 'PERFORMANCE'
+  | 'PREDICTION'
+  | 'RISK'
+  | 'EXPLAINABILITY'
+  | 'RECOMMENDATION'
+  | 'WHAT_IF'
+  | 'ATTENDANCE'
+  | 'BACKLOG'
+  | 'CGPA'
+  | 'TREND'
+  | 'GENERAL_ACADEMIC_GUIDANCE'
+  | 'UNKNOWN';
+
+export type ChatRole = 'user' | 'assistant' | 'system';
+
+export type ChatResponseStatus = 'success' | 'refuted' | 'unavailable' | 'error';
+
+export interface ChatMessageInput {
+  role: ChatRole;
+  content: string;
+  timestamp?: string;
+}
+
+export interface EvidenceSourceRef {
+  phase: number;
+  title: string;
+  description: string;
+}
+
+export interface ChatResponse {
+  message: string;
+  intent: AssistantIntent;
+  sources_used: string[];
+  evidence_references: EvidenceSourceRef[];
+  suggested_prompts: string[];
+  disclaimer: string;
+  generated_at: string;
+  status: ChatResponseStatus;
+}
+
+export interface AssistantSuggestion {
+  prompt: string;
+  intent: AssistantIntent;
+  label: string;
+}
+
+export interface SuggestionsResponse {
+  items: AssistantSuggestion[];
+  generated_at: string;
+}
+
+/** UI model for a single rendered chat turn (superset of backend ChatResponse). */
+export interface ChatTurn {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  intent?: AssistantIntent;
+  sourcesUsed?: string[];
+  evidenceReferences?: EvidenceSourceRef[];
+  suggestedPrompts?: string[];
+  disclaimer?: string;
+  status?: ChatResponseStatus;
+  isError?: boolean;
+  isTyping?: boolean;
+}
+
