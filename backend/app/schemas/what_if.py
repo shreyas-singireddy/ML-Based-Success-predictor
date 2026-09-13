@@ -146,3 +146,5 @@ class WhatIfSimulationResponse(BaseModel):
         "Simulations are hypothetical model estimations based on machine learning inference. "
         "They do not alter official academic records or guarantee future examination outcomes."
     )
+
+    model_config = ConfigDict(protected_namespaces=())
