@@ -3,7 +3,9 @@ Pydantic Schemas for AI CGPA Prediction API.
 """
 
 from typing import Dict, Optional, Any
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
+
+from ml.config.pipeline_config import ALLOWED_GENDERS, ALLOWED_DEPARTMENTS
 
 
 class CGPAPredictionRequest(BaseModel):
@@ -76,9 +78,32 @@ class CGPAPredictionRequest(BaseModel):
     )
     student_number: Optional[str] = Field(
         default=None,
+        max_length=50,
         description="Optional student number to query authorized historical records from DB for longitudinal trend calculation",
         json_schema_extra={"example": "2023cs001"},
     )
+
+    @field_validator("gender")
+    @classmethod
+    def validate_gender(cls, v):
+        """Reject genders the preprocessor was never fitted on (fail safely)."""
+        if v is None:
+            return v
+        if v.upper() not in ALLOWED_GENDERS:
+            raise ValueError(f"gender must be one of {ALLOWED_GENDERS}; got '{v}'")
+        return v.upper()
+
+    @field_validator("department_code")
+    @classmethod
+    def validate_department_code(cls, v):
+        """Reject department codes the pipeline cannot encode."""
+        if v is None:
+            return v
+        if v.upper() not in ALLOWED_DEPARTMENTS:
+            raise ValueError(
+                f"department_code must be one of {ALLOWED_DEPARTMENTS}; got '{v}'"
+            )
+        return v.upper()
 
     model_config = ConfigDict(
         populate_by_name=True,

@@ -14,6 +14,20 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    // Split framework/vendor code into long-cacheable chunks so the app entry
+    // stays small and browsers can cache vendor libraries across releases.
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          http: ['axios'],
+          icons: ['lucide-react'],
+        },
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,

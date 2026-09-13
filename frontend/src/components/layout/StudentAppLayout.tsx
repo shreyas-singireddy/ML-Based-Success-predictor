@@ -117,24 +117,27 @@ export const StudentAppLayout: React.FC = () => {
           </div>
         )}
 
-        {/* Topbar */}
-        <header className="app-topbar">
-          <button
-            className="btn btn-ghost btn-sm topbar-menu"
-            onClick={() => setDrawerOpen(true)}
-            aria-expanded={drawerOpen}
-            aria-label="Open navigation"
-          >
-            <Menu size={18} />
-          </button>
-          <span className="mono-label">PHASE 6 // STUDENT EXPERIENCE</span>
-          <span className="topbar-spacer" />
-          <span className="topbar-role mono-label">{user?.role ?? 'STUDENT'}</span>
-        </header>
+        {/* Main content layout */}
+        <div className="app-main-layout">
+          {/* Topbar */}
+          <header className="app-topbar">
+            <button
+              className="btn btn-ghost btn-sm topbar-menu"
+              onClick={() => setDrawerOpen(true)}
+              aria-expanded={drawerOpen}
+              aria-label="Open navigation"
+            >
+              <Menu size={18} />
+            </button>
+            <span className="mono-label">PHASE 6 // STUDENT EXPERIENCE</span>
+            <span className="topbar-spacer" />
+            <span className="topbar-role mono-label">{user?.role ?? 'STUDENT'}</span>
+          </header>
 
-        <main className="app-main">
-          <Outlet />
-        </main>
+          <main className="app-main">
+            <Outlet />
+          </main>
+        </div>
       </div>
     </StudentDataProvider>
   );

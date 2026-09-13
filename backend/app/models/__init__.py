@@ -6,6 +6,26 @@ from backend.app.models.faculty import FacultyProfile
 from backend.app.models.academic_record import SemesterAcademicRecord
 from backend.app.models.prediction import MLModel, Prediction
 from backend.app.models.audit_log import AuditLog
+from backend.app.models.intervention import (
+    Intervention,
+    InterventionOutcome,
+    InterventionStatus,
+    InterventionCategory,
+    InterventionPriority,
+    OutcomeStatus,
+)
+from backend.app.models.monitoring import (
+    AcademicSnapshot,
+    Alert,
+    MonitoringRun,
+    Notification,
+    AlertType,
+    AlertSeverity,
+    AlertStatus,
+    NotificationChannel,
+    MonitoringRunStatus,
+)
+
 
 __all__ = [
     "Base",
@@ -18,5 +38,20 @@ __all__ = [
     "SemesterAcademicRecord",
     "MLModel",
     "Prediction",
-    "AuditLog"
+    "AuditLog",
+    "Intervention",
+    "InterventionOutcome",
+    "InterventionStatus",
+    "InterventionCategory",
+    "InterventionPriority",
+    "OutcomeStatus",
+    "AcademicSnapshot",
+    "Alert",
+    "MonitoringRun",
+    "Notification",
+    "AlertType",
+    "AlertSeverity",
+    "AlertStatus",
+    "NotificationChannel",
+    "MonitoringRunStatus",
 ]

@@ -39,7 +39,10 @@ class CGPAPredictionService:
     """Singleton-style service managing artifact loading and CGPA prediction."""
 
     def __init__(self, registry_dir: Optional[Path] = None):
-        self.registry_dir = registry_dir or REGISTRY_DIR
+        # Registry may be overridden at deployment time via MODEL_REGISTRY_PATH.
+        from backend.app.core.config import _resolve_registry_path
+
+        self.registry_dir = registry_dir or _resolve_registry_path()
         self._preprocessor = None
         self._model = None
         self._metadata: Dict[str, Any] = {}

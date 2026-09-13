@@ -3,9 +3,10 @@ Pydantic V2 Schemas for AI Academic Risk Prediction API.
 """
 
 from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from ml.classification.risk_policy import RiskLevel, PerformanceCategory
+from ml.config.pipeline_config import ALLOWED_GENDERS, ALLOWED_DEPARTMENTS
 
 
 class RiskPredictionRequest(BaseModel):
@@ -82,6 +83,26 @@ class RiskPredictionRequest(BaseModel):
         description="Count of currently active/un-cleared backlogs.",
         json_schema_extra={"example": 1},
     )
+
+    @field_validator("gender")
+    @classmethod
+    def validate_gender(cls, v):
+        if v is None:
+            return v
+        if v.upper() not in ALLOWED_GENDERS:
+            raise ValueError(f"gender must be one of {ALLOWED_GENDERS}; got '{v}'")
+        return v.upper()
+
+    @field_validator("department_code")
+    @classmethod
+    def validate_department_code(cls, v):
+        if v is None:
+            return v
+        if v.upper() not in ALLOWED_DEPARTMENTS:
+            raise ValueError(
+                f"department_code must be one of {ALLOWED_DEPARTMENTS}; got '{v}'"
+            )
+        return v.upper()
 
     model_config = ConfigDict(extra="ignore")
 

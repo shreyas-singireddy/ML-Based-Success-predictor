@@ -18,6 +18,11 @@ export const PerformancePage: React.FC = () => {
     [payload]
   );
 
+  const records = useMemo(
+    () => (student?.academic_records ?? []).slice().sort((a, b) => a.semester - b.semester),
+    [student]
+  );
+
   useEffect(() => {
     if (payload) cgpa.run();
   }, [payload]);
@@ -48,11 +53,6 @@ export const PerformancePage: React.FC = () => {
       </div>
     );
   }
-
-  const records = useMemo(
-    () => (student.academic_records ?? []).slice().sort((a, b) => a.semester - b.semester),
-    [student]
-  );
 
   const trendData: TrendPoint[] = records.map((r) => ({
     semester: r.semester,

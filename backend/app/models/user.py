@@ -1,6 +1,6 @@
 import enum
 import uuid
-from typing import Optional
+from typing import Optional, List
 from sqlalchemy import String, Boolean, Enum, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.app.core.database import Base, TimestampMixin
@@ -61,5 +61,10 @@ class User(Base, TimestampMixin):
         "FacultyProfile",
         back_populates="user",
         uselist=False,
+        cascade="all, delete-orphan"
+    )
+    notifications: Mapped[List["Notification"]] = relationship(
+        "Notification",
+        back_populates="user",
         cascade="all, delete-orphan"
     )

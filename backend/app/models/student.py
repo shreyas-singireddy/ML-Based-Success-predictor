@@ -92,3 +92,15 @@ class StudentProfile(Base, TimestampMixin):
         cascade="all, delete-orphan",
         order_by="SemesterAcademicRecord.semester"
     )
+    academic_snapshots: Mapped[List["AcademicSnapshot"]] = relationship(
+        "AcademicSnapshot",
+        back_populates="student",
+        cascade="all, delete-orphan",
+        order_by="AcademicSnapshot.created_at.desc()"
+    )
+    alerts: Mapped[List["Alert"]] = relationship(
+        "Alert",
+        back_populates="student",
+        cascade="all, delete-orphan",
+        order_by="Alert.created_at.desc()"
+    )

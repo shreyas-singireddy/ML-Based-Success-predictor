@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
@@ -9,15 +9,72 @@ import { GeneratedLight } from '../components/landing/GeneratedLight';
 import { BrandMark } from '../components/landing/LandingNav';
 import { ShieldCheck, UserCheck, BookOpen, ArrowRight } from 'lucide-react';
 
+export type LoginRole = 'student' | 'faculty' | 'admin';
+
+interface RoleTheme {
+  name: string;
+  primary: string;
+  primaryHover: string;
+  primaryPressed: string;
+  rgb: string;
+  defaultEmail: string;
+  label: string;
+}
+
+export const ROLE_THEMES: Record<LoginRole, RoleTheme> = {
+  admin: {
+    name: 'Admin',
+    primary: '#3B82F6',
+    primaryHover: '#60A5FA',
+    primaryPressed: '#2563EB',
+    rgb: '59, 130, 246',
+    defaultEmail: 'admin@university.edu',
+    label: 'ADMINISTRATION // SYSTEM LEVEL',
+  },
+  faculty: {
+    name: 'Faculty',
+    primary: '#EF4444',
+    primaryHover: '#F87171',
+    primaryPressed: '#DC2626',
+    rgb: '239, 68, 68',
+    defaultEmail: 'faculty.cs@university.edu',
+    label: 'FACULTY & ADVISORS // DEPARTMENT SCOPE',
+  },
+  student: {
+    name: 'Student',
+    primary: '#22C55E',
+    primaryHover: '#4ADE80',
+    primaryPressed: '#16A34A',
+    rgb: '34, 197, 94',
+    defaultEmail: 'student.alice@university.edu',
+    label: 'STUDENT PORTAL // VERIFIED PROFILE',
+  },
+};
+
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get('mode') === 'register' ? 'register' : 'login';
 
+  const [selectedRole, setSelectedRole] = useState<LoginRole>('student');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const activeTheme = ROLE_THEMES[selectedRole];
+
+  // Auto-detect role when typing email if matches known domain keywords
+  useEffect(() => {
+    const lower = email.trim().toLowerCase();
+    if (lower.startsWith('admin') || lower.includes('.admin@') || lower === 'admin@university.edu') {
+      setSelectedRole('admin');
+    } else if (lower.startsWith('faculty') || lower.includes('.faculty@') || lower.includes('faculty.cs')) {
+      setSelectedRole('faculty');
+    } else if (lower.startsWith('student') || lower.includes('.student@') || lower.includes('student.alice')) {
+      setSelectedRole('student');
+    }
+  }, [email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,16 +95,30 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleQuickLogin = (demoEmail: string) => {
-    setEmail(demoEmail);
+  const handleQuickLogin = (role: LoginRole) => {
+    setSelectedRole(role);
+    setEmail(ROLE_THEMES[role].defaultEmail);
     setPassword('Password@123');
     setError(null);
   };
 
+  // Dynamic CSS variables for role-based neon lighting
+  const sceneStyle = {
+    '--role-primary': activeTheme.primary,
+    '--role-primary-hover': activeTheme.primaryHover,
+    '--role-primary-pressed': activeTheme.primaryPressed,
+    '--role-rgb': activeTheme.rgb,
+    '--role-glow': `rgba(${activeTheme.rgb}, 0.22)`,
+    '--role-glow-soft': `rgba(${activeTheme.rgb}, 0.10)`,
+    '--role-glow-ambient': `rgba(${activeTheme.rgb}, 0.05)`,
+    '--role-border': `rgba(${activeTheme.rgb}, 0.35)`,
+    '--role-bg-tint': `rgba(${activeTheme.rgb}, 0.08)`,
+  } as React.CSSProperties;
+
   if (mode === 'register') {
     return (
-      <div className="login-scene">
-        <GeneratedLight intensity={0.5} />
+      <div className="login-scene" style={sceneStyle}>
+        <GeneratedLight intensity={0.5} color={activeTheme.rgb} />
         <div className="login-card">
           <div className="login-head">
             <BrandMark size={44} />
@@ -59,7 +130,7 @@ export const LoginPage: React.FC = () => {
             Contact your faculty coordinator for access.
           </p>
           <div className="hero-cta">
-            <Link to="/login" className="btn btn-primary">
+            <Link to="/login" className="btn btn-primary btn-role-submit">
               BACK TO SIGN IN <ArrowRight size={15} />
             </Link>
           </div>
@@ -69,8 +140,8 @@ export const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="login-scene">
-      <GeneratedLight intensity={0.6} />
+    <div className="login-scene" style={sceneStyle}>
+      <GeneratedLight intensity={0.65} color={activeTheme.rgb} />
       <div className="login-card">
         <div className="login-head">
           <BrandMark size={44} />
@@ -107,6 +178,7 @@ export const LoginPage: React.FC = () => {
           <Button
             type="submit"
             loading={loading}
+            className="btn-role-submit"
             style={{ width: '100%', marginTop: '0.6rem' }}
           >
             {loading ? 'AUTHENTICATING…' : 'ACCESS DASHBOARD'}
@@ -117,27 +189,30 @@ export const LoginPage: React.FC = () => {
           <span className="mono-label" style={{ display: 'block', marginBottom: '0.6rem' }}>
             QUICK DEMO AUTOFILL
           </span>
-          <div className="login-demo-actions">
+          <div className="login-demo-actions" role="group" aria-label="Demo role selector">
             <button
               type="button"
-              className="btn btn-outline btn-sm"
-              onClick={() => handleQuickLogin('admin@university.edu')}
+              className={`login-demo-btn ${selectedRole === 'admin' ? 'is-active' : ''}`}
+              onClick={() => handleQuickLogin('admin')}
+              aria-pressed={selectedRole === 'admin'}
             >
-              <ShieldCheck size={13} /> Admin
+              <ShieldCheck size={14} /> Admin
             </button>
             <button
               type="button"
-              className="btn btn-outline btn-sm"
-              onClick={() => handleQuickLogin('faculty.cs@university.edu')}
+              className={`login-demo-btn ${selectedRole === 'faculty' ? 'is-active' : ''}`}
+              onClick={() => handleQuickLogin('faculty')}
+              aria-pressed={selectedRole === 'faculty'}
             >
-              <UserCheck size={13} /> Faculty
+              <UserCheck size={14} /> Faculty
             </button>
             <button
               type="button"
-              className="btn btn-outline btn-sm"
-              onClick={() => handleQuickLogin('student.alice@university.edu')}
+              className={`login-demo-btn ${selectedRole === 'student' ? 'is-active' : ''}`}
+              onClick={() => handleQuickLogin('student')}
+              aria-pressed={selectedRole === 'student'}
             >
-              <BookOpen size={13} /> Student
+              <BookOpen size={14} /> Student
             </button>
           </div>
         </div>

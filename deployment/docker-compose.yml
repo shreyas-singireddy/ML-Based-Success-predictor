@@ -1,0 +1,85 @@
+# =============================================================================
+# Student Success Predictor — Compose deployment (single-host production shape)
+# =============================================================================
+# Services: postgres (16), backend (FastAPI + ML), frontend (Nginx + SPA).
+#
+# Usage:
+#   1. cp .env.example .env            # set real secrets + ENVIRONMENT=production
+#   2. docker compose -f deployment/docker-compose.yml up --build -d
+#
+# The ML registry is mounted from ml/registry into the backend container and
+# MODEL_REGISTRY_PATH is set so inference reads artifacts from the mount.
+# =============================================================================
+
+name: student-success-predictor
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-student_predictor_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-student_predictor_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - appnet
+
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      DEBUG: "false"
+      # Point the backend at the Postgres service and the mounted registry.
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-student_predictor_db}
+      DATABASE_URL_SYNC: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-student_predictor_db}
+      MODEL_REGISTRY_PATH: /models
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost}
+    volumes:
+      - ../ml/registry:/models:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health', timeout=5).status==200 else 1)"
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 5
+    networks:
+      - appnet
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - appnet
+
+volumes:
+  postgres_data:
+
+networks:
+  appnet:
+    driver: bridge

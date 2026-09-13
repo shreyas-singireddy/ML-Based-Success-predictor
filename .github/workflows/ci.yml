@@ -1,0 +1,88 @@
+# =============================================================================
+# Student Success Predictor — CI (GitHub Actions)
+# =============================================================================
+# Runs on push/PR to main/master: backend tests, ML pipeline tests, frontend
+# typecheck + tests + production build, dependency sanity, and secret scanning.
+# No secrets are injected; nothing here weakens the quality bar.
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  backend-and-ml:
+    name: Backend + ML tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip check
+
+      - name: Secret scan (no credentials committed)
+        run: python scripts/scan_for_secrets.py --path .
+
+      - name: Backend tests
+        run: python -m pytest backend/tests -q --no-header
+
+      - name: ML pipeline tests
+        run: python -m pytest ml/tests -q --no-header
+
+  frontend:
+    name: Frontend typecheck + tests + build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+
+      - name: Type check
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Tests
+        working-directory: frontend
+        run: npm test
+
+      - name: Production build
+        working-directory: frontend
+        run: npm run build
+
+  lint-check:
+    name: Python byte-compile sanity
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Byte-compile all packages
+        run: |
+          python -m compileall -q backend ml scripts

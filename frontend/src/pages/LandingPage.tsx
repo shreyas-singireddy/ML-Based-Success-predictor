@@ -16,17 +16,19 @@ export const LandingPage: React.FC = () => {
     <div className="landing">
       {!introDone && <CinematicIntro onDone={() => setIntroDone(true)} />}
       <LandingNav />
-      <Hero />
-      <AINetwork />
-      <PredictionShowcase />
-      <RiskShowcase />
-      <XaiShowcase />
-      <FuturePreview />
-      <div className="cta-band">
-        <h2 className="cta-title">READY TO SEE YOUR OWN TRAJECTORY?</h2>
-        <a href="/app" className="btn btn-primary btn-lg">OPEN THE DASHBOARD</a>
-        <p className="mono-label">AUTHENTICATED STUDENTS ONLY — REAL RECORDS, REAL INSIGHTS.</p>
-      </div>
+      <main id="main-content">
+        <Hero />
+        <AINetwork />
+        <PredictionShowcase />
+        <RiskShowcase />
+        <XaiShowcase />
+        <FuturePreview />
+        <div className="cta-band">
+          <h2 className="cta-title">READY TO SEE YOUR OWN TRAJECTORY?</h2>
+          <a href="/app" className="btn btn-primary btn-lg">OPEN THE DASHBOARD</a>
+          <p className="mono-label">AUTHENTICATED STUDENTS ONLY — REAL RECORDS, REAL INSIGHTS.</p>
+        </div>
+      </main>
       <LandingFooter />
     </div>
   );

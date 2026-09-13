@@ -39,7 +39,7 @@ export const Hero: React.FC = () => {
       <div className="hero-stats">
         <div className="hero-stat">
           <span className="mono-label">MODEL</span>
-          <span>XGBOOST TUNED</span>
+          <span>REGRESSION + RISK CLASSIFIER</span>
         </div>
         <div className="hero-stat">
           <span className="mono-label">CORRECTNESS</span>

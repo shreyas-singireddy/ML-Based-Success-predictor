@@ -1,22 +1,41 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from backend.app.core.config import settings
 from backend.app.core.database import get_db
-from backend.app.core.security import verify_password, create_access_token, create_refresh_token, decode_token
 from backend.app.core.deps import get_current_user
+from backend.app.core.security import verify_password, create_access_token, create_refresh_token, decode_token
+from backend.app.core.rate_limit import RateLimiter, client_ip_key
 from backend.app.models.user import User
 from backend.app.schemas.auth import LoginRequest, Token, UserResponse
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
+# In-memory brute-force guard on the login endpoint (per IP per minute).
+# `max_calls` is evaluated per request so configuration changes take effect
+# immediately (and the limiter can be disabled by setting the value to 0).
+_login_limiter = RateLimiter(
+    max_calls=lambda: settings.LOGIN_RATE_LIMIT_PER_MINUTE,
+    window_seconds=60,
+)
+
 
 @router.post("/login", response_model=Token)
 async def login(
     login_data: LoginRequest,
+    request: Request,
     response: Response,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
+    # Rate limit BEFORE credential verification to blunt password spraying.
+    if settings.LOGIN_RATE_LIMIT_PER_MINUTE > 0:
+        if not _login_limiter.check(client_ip_key(request)):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many login attempts. Please try again later.",
+            )
+
     stmt = (
         select(User)
         .where(User.email == login_data.email.lower().strip())
@@ -42,15 +61,18 @@ async def login(
 
     access_token = create_access_token(subject=user.id, role=user.role.value)
     refresh_token = create_refresh_token(subject=user.id, role=user.role.value)
+    refresh_max_age = settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600
 
-    # Set secure HttpOnly cookie for refresh token
+    # Set secure HttpOnly cookie for refresh token. Secure flag is forced on in
+    # production (TLS) via config; development keeps localhost HTTP working.
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=False,  # Set True in production with TLS
+        secure=settings.COOKIE_SECURE or settings.ENVIRONMENT == "production",
         samesite="lax",
-        max_age=7 * 24 * 3600
+        max_age=refresh_max_age,
+        path="/",
     )
 
     profile_id = None
@@ -72,16 +94,24 @@ async def login(
     return Token(
         access_token=access_token,
         token_type="bearer",
-        expires_in=3600,
+        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         user=user_resp
     )
 
 
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(response: Response):
+    """Destroys the refresh-token cookie on the client."""
+    response.delete_cookie(key="refresh_token", path="/")
+    return
+
+
 @router.post("/refresh")
 async def refresh_token_endpoint(
+    request: Request,
     response: Response,
     refresh_token: str = Cookie(None),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     if not refresh_token:
         raise HTTPException(
@@ -105,7 +135,24 @@ async def refresh_token_endpoint(
         )
 
     new_access_token = create_access_token(subject=user.id, role=user.role.value)
-    return {"access_token": new_access_token, "token_type": "bearer", "expires_in": 3600}
+    # Rotate the refresh token: issues a fresh cookie and invalidates the old
+    # one through a new JWT (stateless; old tokens simply expire on their own).
+    new_refresh_token = create_refresh_token(subject=user.id, role=user.role.value)
+    refresh_max_age = settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh_token,
+        httponly=True,
+        secure=settings.COOKIE_SECURE or settings.ENVIRONMENT == "production",
+        samesite="lax",
+        max_age=refresh_max_age,
+        path="/",
+    )
+    return {
+        "access_token": new_access_token,
+        "token_type": "bearer",
+        "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    }
 
 
 @router.get("/me", response_model=UserResponse)

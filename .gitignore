@@ -1,0 +1,67 @@
+# ==============================================================================
+# Student Success Predictor — Git Ignore Rules
+# ==============================================================================
+
+# ---------------------------------- Secrets ----------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# ------------------------------- Python / Backend ----------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.coverage
+.python-version
+
+# ------------------------------- Databases -----------------------------------
+*.db
+*.sqlite
+*.sqlite3
+
+# ------------------------------- ML Artifacts -------------------------------
+# NOTE: model artifacts (ml/registry/*.joblib) and processed datasets are
+# currently version-controlled to keep the hackathon repo self-contained and
+# reproducible. Uncomment the lines below if artifacts move to a registry.
+# ml/registry/*.joblib
+# ml/data/processed/*.parquet
+# ml/data/processed/*.csv
+
+# ------------------------------- Node / Frontend ----------------------------
+node_modules/
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# --------------------------------- Logs --------------------------------------
+*.log
+logs/
+
+# ------------------------------ Editors / OS ---------------------------------
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ------------------------------ Runtime Temp --------------------------------
+tmp/
+temp/
+*.tmp

@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 from backend.app.core.config import settings
 from backend.app.core.database import Base, get_db
 from backend.app.core.security import get_password_hash
+import backend.app.models  # noqa: F401  (register SQLAlchemy mappers incl. Notification)
 from backend.app.models.user import User, UserRole
 from backend.app.models.department import Department
 from backend.app.models.student import StudentProfile, GenderEnum
@@ -25,6 +26,11 @@ from backend.app.main import app
 settings.AI_PROVIDER = "fallback"
 settings.GEMINI_API_KEY = ""
 settings.OPENAI_API_KEY = ""
+
+# --- Disable the production login brute-force limiter for tests --------------
+# The in-memory limiter shares one key across the entire test run; individual
+# rate-limit behaviour is covered by test_security_hardening.py instead.
+settings.LOGIN_RATE_LIMIT_PER_MINUTE = 0
 
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 

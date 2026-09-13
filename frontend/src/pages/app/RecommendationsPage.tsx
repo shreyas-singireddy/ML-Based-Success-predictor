@@ -51,6 +51,22 @@ export const RecommendationsPage: React.FC = () => {
     }
   }, [payload]);
 
+  const recData = recAsync.data;
+
+  const filteredRecommendations = useMemo(() => {
+    if (!recData?.recommendations) return [];
+    return recData.recommendations.filter((rec) => {
+      const matchPriority = priorityFilter === 'ALL' || rec.priority === priorityFilter;
+      const matchCategory = categoryFilter === 'ALL' || rec.category === categoryFilter;
+      return matchPriority && matchCategory;
+    });
+  }, [recData, priorityFilter, categoryFilter]);
+
+  const categoriesAvailable = useMemo(() => {
+    if (!recData?.recommendations) return [];
+    return Array.from(new Set(recData.recommendations.map((r) => r.category)));
+  }, [recData]);
+
   if (studentLoading) {
     return (
       <div className="app-page">
@@ -80,22 +96,6 @@ export const RecommendationsPage: React.FC = () => {
       </div>
     );
   }
-
-  const recData = recAsync.data;
-
-  const filteredRecommendations = useMemo(() => {
-    if (!recData?.recommendations) return [];
-    return recData.recommendations.filter((rec) => {
-      const matchPriority = priorityFilter === 'ALL' || rec.priority === priorityFilter;
-      const matchCategory = categoryFilter === 'ALL' || rec.category === categoryFilter;
-      return matchPriority && matchCategory;
-    });
-  }, [recData, priorityFilter, categoryFilter]);
-
-  const categoriesAvailable = useMemo(() => {
-    if (!recData?.recommendations) return [];
-    return Array.from(new Set(recData.recommendations.map((r) => r.category)));
-  }, [recData]);
 
   return (
     <div className="app-page">
