@@ -8,6 +8,19 @@ interface ChatMessageBubbleProps {
 }
 
 /**
+ * Renders **bold** emphasis as <strong> without a full markdown pipeline.
+ * Everything else (bullets, line breaks) is preserved verbatim by pre-wrap CSS.
+ */
+const renderInline = (text: string): React.ReactNode[] =>
+  text.split(/\*\*(.+?)\*\*/g).map((part, index) =>
+    index % 2 === 1 ? (
+      <strong key={`${index}-${part}`}>{part}</strong>
+    ) : (
+      <React.Fragment key={`${index}-${part}`}>{part}</React.Fragment>
+    ),
+  );
+
+/**
  * Renders a single chat turn as a grounded-assistant bubble or a plain user
  * bubble. Assistant bubbles may carry intent, phase-level evidence citations,
  * source chips, suggested follow-ups, and the transparency disclaimer.
@@ -47,7 +60,7 @@ export const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({
           </div>
         )}
 
-        <div className="chat-bubble-text">{turn.content}</div>
+        <div className="chat-bubble-text">{renderInline(turn.content)}</div>
 
         {intent && (
           <div className="chat-intent">

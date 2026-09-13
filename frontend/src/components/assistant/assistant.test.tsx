@@ -77,6 +77,22 @@ describe('ChatMessageBubble', () => {
     const alert = screen.getByRole('alert');
     expect(alert).toHaveTextContent('The assistant is unavailable right now.');
   });
+
+  it('renders **bold** emphasis without leaking literal asterisks', () => {
+    render(
+      <ChatMessageBubble
+        turn={{
+          id: 'a4',
+          role: 'assistant',
+          content: 'Your predicted CGPA is **8.10** for this semester.',
+          timestamp: '2026-01-01T00:00:00Z',
+        }}
+      />
+    );
+    const strong = document.querySelector('strong');
+    expect(strong).toHaveTextContent('8.10');
+    expect(screen.queryByText(/^\*\*/)).not.toBeInTheDocument();
+  });
 });
 
 describe('SuggestedPrompts', () => {

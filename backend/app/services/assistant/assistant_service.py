@@ -255,11 +255,12 @@ class AssistantService:
         if intent == AssistantIntent.WHAT_IF:
             what_if_overrides = parse_what_if_overrides(request.message)
 
-        # 5. Verified context assembly
+        # 5. Verified context assembly (intent-scoped: only required engines run)
         try:
             ctx = await context_builder.build(
                 current_user=current_user,
                 db=db,
+                intent=intent,
                 what_if_overrides=what_if_overrides,
                 include_simulation=intent == AssistantIntent.WHAT_IF,
             )
@@ -277,7 +278,7 @@ class AssistantService:
                 disclaimer=DEFAULT_DISCLAIMER,
             )
 
-        if not ctx.has_prediction or not ctx.latest_record:
+        if not ctx.latest_record:
             return ChatResponse(
                 message=(
                     "I don't have a verified semester record linked to your profile yet, so I can't "

@@ -50,6 +50,23 @@ async def test_chat_prediction_is_grounded(db_session: AsyncSession, student1_us
 
 
 @pytest.mark.asyncio
+async def test_chat_prediction_does_not_run_unrelated_engines(db_session: AsyncSession, student1_user: User):
+    """A CGPA question must only touch Phase 3 (+ Phase 2), never SHAP/risk/recs."""
+    assistant_service.reset_rate_limit(str(student1_user.id))
+    resp = await assistant_service.chat(
+        request=ChatRequest(message="What is my predicted CGPA?"),
+        db=db_session,
+        current_user=student1_user,
+    )
+
+    assert resp.status == "success"
+    assert "Phase 3" in resp.sources_used
+    assert "Phase 5" not in resp.sources_used
+    assert "Phase 8" not in resp.sources_used
+    assert resp.evidence_references and all(r.phase in (2, 3) for r in resp.evidence_references)
+
+
+@pytest.mark.asyncio
 async def test_chat_risk_question_grounded(db_session: AsyncSession, student1_user: User):
     assistant_service.reset_rate_limit(str(student1_user.id))
     resp = await assistant_service.chat(

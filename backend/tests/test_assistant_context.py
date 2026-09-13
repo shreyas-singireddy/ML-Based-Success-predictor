@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.models.user import User
+from backend.app.schemas.assistant import AssistantIntent
 from backend.app.services.assistant.context_builder import (
     ContextUnavailableError,
     context_builder,
@@ -138,3 +139,63 @@ async def test_context_build_collects_shap_scores_when_available(db_session: Asy
     else:
         # SHAP may be gracefully unavailable; context must still be usable.
         assert ctx.has_prediction
+
+
+@pytest.mark.asyncio
+async def test_context_build_is_intent_scoped_prediction(db_session: AsyncSession, student1_user: User):
+    """PREDICTION turns must not invoke SHAP, risk, or recommendation engines (#7/#36)."""
+    ctx = await context_builder.build(
+        current_user=student1_user,
+        db=db_session,
+        intent=AssistantIntent.PREDICTION,
+    )
+
+    assert ctx.latest_record
+    assert ctx.prediction is not None
+    assert ctx.risk is None
+    assert ctx.shap is None
+    assert ctx.recommendations is None
+    assert ctx.simulation is None
+    assert "Phase 3" in ctx.sources_used
+    assert "Phase 8" not in ctx.sources_used
+    assert "Phase 5" not in ctx.sources_used
+
+    rendered = format_context(ctx)
+    assert "PREDICTED CGPA" in rendered
+    assert "ACADEMIC RISK" not in rendered
+    assert "TOP RECOMMENDATIONS" not in rendered
+
+
+@pytest.mark.asyncio
+async def test_context_build_is_intent_scoped_what_if(db_session: AsyncSession, student1_user: User):
+    """WHAT_IF turns require the simulation engine and no unrelated recommenders."""
+    ctx = await context_builder.build(
+        current_user=student1_user,
+        db=db_session,
+        intent=AssistantIntent.WHAT_IF,
+        what_if_overrides={"attendance_percentage": 85.0},
+    )
+
+    assert ctx.simulation is not None
+    assert "Phase 7" in ctx.sources_used
+    assert ctx.recommendations is None
+    assert "Phase 8" not in ctx.sources_used
+
+
+@pytest.mark.asyncio
+async def test_context_build_general_skips_all_model_engines(db_session: AsyncSession, student1_user: User):
+    """General academic questions must not run any ML engine (#7/#36)."""
+    ctx = await context_builder.build(
+        current_user=student1_user,
+        db=db_session,
+        intent=AssistantIntent.GENERAL_ACADEMIC_GUIDANCE,
+    )
+
+    assert ctx.student["student_number"] == "STU-TEST-001"
+    assert ctx.latest_record
+    assert ctx.prediction is None
+    assert ctx.risk is None
+    assert ctx.shap is None
+    assert ctx.recommendations is None
+    assert ctx.simulation is None
+    assert ctx.sources_used == ["Phase 2"]

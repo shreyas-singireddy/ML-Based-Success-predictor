@@ -20,7 +20,7 @@ from sqlalchemy.orm import selectinload
 
 from backend.app.models.student import StudentProfile
 from backend.app.models.academic_record import SemesterAcademicRecord
-from backend.app.schemas.assistant import EvidenceSourceRef
+from backend.app.schemas.assistant import AssistantIntent, EvidenceSourceRef
 from backend.app.schemas.prediction import CGPAPredictionRequest
 from backend.app.schemas.risk_prediction import RiskPredictionRequest
 from backend.app.schemas.recommendation import RecommendationRequest
@@ -76,6 +76,61 @@ _PHASE_LABELS = {
     8: ("Phase 8", "Recommendation Engine", "Prioritized evidence-backed action plan and targets.", {"recommendations", "action_plan"}),
     2: ("Phase 2", "Feature Engineering", "Verified historical semester indicators from the student record.", {"academic_history", "latest_record"}),
 }
+
+
+@dataclass(frozen=True)
+class ContextPolicy:
+    """Which verified slices a given intent needs assembled into context."""
+
+    history: bool = False
+    prediction: bool = False
+    risk: bool = False
+    shap: bool = False
+    recommendations: bool = False
+    simulation: bool = False
+
+
+_FULL_POLICY = ContextPolicy(
+    history=True,
+    prediction=True,
+    risk=True,
+    shap=True,
+    recommendations=True,
+)
+
+# Intent -> minimal-but-sufficient engine selection (#7 / #36).
+# A CGPA question never triggers SHAP, recommendations, or What-If; a general
+# question triggers no model engines at all.
+_INTENT_POLICIES: Dict[Optional[AssistantIntent], ContextPolicy] = {
+    None: _FULL_POLICY,
+    AssistantIntent.PERFORMANCE: ContextPolicy(history=True, prediction=True),
+    AssistantIntent.PREDICTION: ContextPolicy(history=True, prediction=True),
+    AssistantIntent.CGPA: ContextPolicy(history=True, prediction=True),
+    AssistantIntent.RISK: ContextPolicy(prediction=True, risk=True),
+    AssistantIntent.EXPLAINABILITY: ContextPolicy(prediction=True, risk=True, shap=True),
+    AssistantIntent.RECOMMENDATION: ContextPolicy(prediction=True, risk=True, recommendations=True),
+    AssistantIntent.WHAT_IF: ContextPolicy(prediction=True, risk=True, simulation=True),
+    AssistantIntent.ATTENDANCE: ContextPolicy(history=True, prediction=True, risk=True),
+    AssistantIntent.BACKLOG: ContextPolicy(history=True, prediction=True, risk=True, recommendations=True),
+    AssistantIntent.TREND: ContextPolicy(history=True, prediction=True),
+    AssistantIntent.GENERAL_ACADEMIC_GUIDANCE: ContextPolicy(),
+    AssistantIntent.UNKNOWN: ContextPolicy(),
+}
+
+
+def policy_for_intent(intent: Optional[AssistantIntent], include_simulation: bool = False) -> ContextPolicy:
+    """Resolve the assembly policy for an intent (defaults to the full context)."""
+    policy = _INTENT_POLICIES.get(intent, _FULL_POLICY)
+    if include_simulation and not policy.simulation:
+        policy = ContextPolicy(
+            history=policy.history,
+            prediction=policy.prediction,
+            risk=policy.risk,
+            shap=policy.shap,
+            recommendations=policy.recommendations,
+            simulation=True,
+        )
+    return policy
 
 
 class ContextBuilder:
@@ -194,8 +249,31 @@ class ContextBuilder:
 
         cgpa_resp = await prediction_service.predict_cgpa(cgpa_req, db, current_user)
         risk_resp = await academic_risk_service.predict_risk(risk_req, db, current_user)
+        return self._serialize_prediction(cgpa_resp), self._serialize_risk(risk_resp)
 
-        prediction = {
+    async def _run_prediction(
+        self,
+        current_user: Any,
+        db: AsyncSession,
+        cgpa_req: CGPAPredictionRequest,
+    ) -> Dict[str, Any]:
+        prediction_service.load_artifacts()
+        cgpa_resp = await prediction_service.predict_cgpa(cgpa_req, db, current_user)
+        return self._serialize_prediction(cgpa_resp)
+
+    async def _run_risk(
+        self,
+        current_user: Any,
+        db: AsyncSession,
+        risk_req: RiskPredictionRequest,
+    ) -> Dict[str, Any]:
+        academic_risk_service.load_artifacts()
+        risk_resp = await academic_risk_service.predict_risk(risk_req, db, current_user)
+        return self._serialize_risk(risk_resp)
+
+    @staticmethod
+    def _serialize_prediction(cgpa_resp: Any) -> Dict[str, Any]:
+        return {
             "predicted_cgpa": cgpa_resp.predicted_cgpa,
             "prediction_context": cgpa_resp.prediction_context,
             "model_name": cgpa_resp.model_name,
@@ -213,7 +291,9 @@ class ContextBuilder:
             },
         }
 
-        risk = {
+    @staticmethod
+    def _serialize_risk(risk_resp: Any) -> Dict[str, Any]:
+        return {
             "risk_level": risk_resp.risk_level,
             "risk_score": risk_resp.risk_score,
             "grade": risk_resp.grade,
@@ -231,7 +311,6 @@ class ContextBuilder:
             "model_name": risk_resp.model_name,
             "model_version": risk_resp.model_version,
         }
-        return prediction, risk
 
     async def _run_shap(
         self,
@@ -244,6 +323,7 @@ class ContextBuilder:
         try:
             import numpy as np
 
+            prediction_service.load_artifacts()
             raw_df, _ = await prediction_service.prepare_input_dataframe(cgpa_req, db, current_user)
             featured_df = prediction_service._feature_engineer.transform(raw_df)
             current_features = featured_df.iloc[[-1]].copy()
@@ -385,16 +465,22 @@ class ContextBuilder:
         self,
         current_user: Any,
         db: AsyncSession,
+        intent: Optional[AssistantIntent] = None,
         what_if_overrides: Optional[Dict[str, object]] = None,
         include_simulation: bool = False,
     ) -> BuildContextResult:
         """
         Assemble the verified context for a chat turn.
 
+        The ``intent`` parameter drives per-intent context selection (#7/36):
+        only the engines actually needed for the detected intent are invoked,
+        reducing latency, cost, and unnecessary private-context exposure.
+
         RBAC is enforced on every step: the student's own profile and records
         are the only authorized data sources. Ad-hoc student numbers are not
         accepted - identity comes from the authenticated user session.
         """
+        policy = policy_for_intent(intent, include_simulation=include_simulation)
         student = await self._resolve_student(current_user, db)
         latest = await self._resolve_latest_record(student, db)
 
@@ -406,13 +492,11 @@ class ContextBuilder:
             "cumulative_gpa": float(student.cumulative_gpa) if student.cumulative_gpa is not None else None,
         }
 
-        history = await self._resolve_history(student, db)
-
         if latest is None:
             result = BuildContextResult(
                 student=student_meta,
                 latest_record={},
-                academic_history=history,
+                academic_history=[],
                 prediction=None,
                 risk=None,
                 shap=None,
@@ -451,24 +535,34 @@ class ContextBuilder:
 
         cgpa_req, risk_req = self._build_requests(student, latest)
 
+        # ---- Intent-scoped engine calls ---------------------------------------
+        history = await self._resolve_history(student, db) if policy.history else []
+
         prediction: Optional[Dict[str, Any]] = None
         risk: Optional[Dict[str, Any]] = None
-        try:
-            prediction, risk = await self._run_prediction_and_risk(current_user, db, cgpa_req, risk_req)
-        except Exception as e:  # noqa: BLE001 - engines may be unavailable
-            logger.warning(f"Prediction/Risk engines unavailable for assistant context: {e}")
-            raise ContextUnavailableError(
-                "The prediction and risk engines are currently unavailable. Please verify that trained model artifacts are present."
-            ) from e
+        if policy.prediction or policy.risk:
+            try:
+                if policy.prediction and policy.risk:
+                    prediction, risk = await self._run_prediction_and_risk(current_user, db, cgpa_req, risk_req)
+                elif policy.prediction:
+                    prediction = await self._run_prediction(current_user, db, cgpa_req)
+                elif policy.risk:
+                    risk = await self._run_risk(current_user, db, risk_req)
+            except Exception as e:  # noqa: BLE001 - engines may be unavailable
+                logger.warning(f"Requested engine(s) unavailable for assistant context: {e}")
+                raise ContextUnavailableError(
+                    "The prediction and risk engines are currently unavailable. "
+                    "Please verify that trained model artifacts are present."
+                ) from e
 
-        shap = await self._run_shap(cgpa_req, raw_data, db, current_user)
-        recommendations = await self._run_recommendations(student, db, current_user)
-
+        shap = await self._run_shap(cgpa_req, raw_data, db, current_user) if policy.shap else None
+        recommendations = await self._run_recommendations(student, db, current_user) if policy.recommendations else None
+        run_simulation = policy.simulation or include_simulation
         simulation: Optional[Dict[str, Any]] = None
-        if include_simulation and what_if_overrides:
+        if run_simulation and what_if_overrides:
             simulation = await self._run_simulation(student, what_if_overrides, db, current_user)
 
-        # Collect every verified numeric value for the grounding guard.
+        # ---- Verified number collection (grounding guard) ----------------------
         verified: set = {
             raw_data["attendance_percentage"],
             raw_data["previous_cgpa"],
@@ -476,18 +570,20 @@ class ContextBuilder:
             raw_data["mid_2"],
             raw_data["internal_marks"],
             float(raw_data["backlogs"]),
-            prediction["predicted_cgpa"],
         }
-        for f in risk["risk_factors"]:
-            try:
-                verified.add(round(float(f["value"]), 3))
-            except (TypeError, ValueError):
-                continue
-        verified.add(risk["risk_score"])
-        for prob in risk["risk_probabilities"].values():
-            verified.add(prob)
+        if prediction is not None:
+            verified.add(prediction["predicted_cgpa"])
+        if risk is not None:
+            for f in risk["risk_factors"]:
+                try:
+                    verified.add(round(float(f["value"]), 3))
+                except (TypeError, ValueError):
+                    continue
+            verified.add(risk["risk_score"])
+            for prob in risk["risk_probabilities"].values():
+                verified.add(prob)
 
-        if shap:
+        if shap is not None:
             for key in ("positive_factors", "negative_factors"):
                 for f in shap[key]:
                     verified.add(round(float(f["shap_value"]), 3))
@@ -496,7 +592,7 @@ class ContextBuilder:
             verified.add(shap["base_value"])
             verified.add(shap["shap_sum"])
 
-        if recommendations:
+        if recommendations is not None:
             for rec in recommendations["top_recommendations"]:
                 for ev in rec["evidence"]:
                     for key in ("current_value", "target_or_threshold", "simulated_value", "shap_contribution"):
@@ -507,7 +603,7 @@ class ContextBuilder:
                             except (TypeError, ValueError):
                                 continue
 
-        if simulation:
+        if simulation is not None:
             for key in (
                 "baseline_predicted_cgpa",
                 "simulated_predicted_cgpa",
@@ -518,23 +614,24 @@ class ContextBuilder:
             ):
                 verified.add(round(float(simulation[key]), 3))
 
+        # ---- Source telemetry ----------------------------------------------------
         sources_used = ["Phase 2"]
         refs = [self._ref(2)]
 
-        has_prediction = prediction is not None
-        has_risk = risk is not None
-
-        if has_prediction and has_risk:
-            sources_used += ["Phase 3", "Phase 4"]
-            refs += [self._ref(3), self._ref(4)]
-        if shap:
-            sources_used += ["Phase 5"]
+        if prediction is not None:
+            sources_used.append("Phase 3")
+            refs.append(self._ref(3))
+        if risk is not None:
+            sources_used.append("Phase 4")
+            refs.append(self._ref(4))
+        if shap is not None:
+            sources_used.append("Phase 5")
             refs.append(self._ref(5))
-        if recommendations:
-            sources_used += ["Phase 8"]
+        if recommendations is not None:
+            sources_used.append("Phase 8")
             refs.append(self._ref(8))
-        if simulation:
-            sources_used += ["Phase 7"]
+        if simulation is not None:
+            sources_used.append("Phase 7")
             refs.append(self._ref(7))
 
         return BuildContextResult(
